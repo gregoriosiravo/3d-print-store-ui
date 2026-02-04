@@ -74,7 +74,14 @@
                                     role="img" aria-label="User avatar"></div>
                             </NuxtLink>
                         </div>
+                        <div v-else>
+                            <!-- Login Button -->
+                            <NuxtLink to="/login" class="btn btn-outline-light btn-sm fw-semibold"
+                                aria-label="Log in to your account">
+                                Log In
+                            </NuxtLink>
 
+                        </div>
                     </div>
                 </div>
             </div>

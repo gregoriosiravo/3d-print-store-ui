@@ -40,7 +40,72 @@ export const useUserStore = defineStore("user", {
     },
   },
   actions: {
-    login() {},
-    logout() {},
+    async login(email: string, password: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await $fetch<{ user: User; token?: string }>(
+          "api/auth/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          },
+        );
+        this.user = response.user;
+        this.isAuthenticated = true;
+
+        if (response.token) {
+          useCookie("auth_token").value = response.token;
+        }
+        await navigateTo("/dashboard");
+      } catch (err) {
+        console.error(err);
+        this.error = "Login failed. Please try again.";
+      } finally {
+        this.loading = false;
+      }
+    },
+    async logout() {
+      try {
+        await $fetch("api/auth/logout", {
+          method: "POST",
+        });
+        this.user = null;
+        this.isAuthenticated = false;
+        useCookie("auth_token").value = null;
+        await navigateTo("/");
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
+    },
+    async registerUser(
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+    ) {
+      try {
+        await $fetch<{ user: User; token?: string }>("api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+          }),
+        });
+      } catch (err) {
+        console.error("Navigation to register failed:", err);
+      }
+    },
+    //TODO: add update profile action
+    //TODO: add change password action
+    //TODO: add fetch current user action
   },
 });
