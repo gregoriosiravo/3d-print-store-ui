@@ -1,4 +1,3 @@
-<!-- components/Ui/Input.vue -->
 <template>
     <input :type="type" class="btn-check" :name="name" :id="id" :autocomplete="autocomplete" :checked="checked">
     <label :class="labelClass" :for="labelFor || id" :style="labelStyle" :aria-label="ariaLabel">

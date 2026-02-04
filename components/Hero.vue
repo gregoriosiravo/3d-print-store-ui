@@ -1,27 +1,30 @@
 <template>
-    <div class="row align-items-center gy-3">
-        <div class="col-lg-8">
-            <h1 id="hero-title" class="display-5 display-lg-4 fw-bold text-white mb-3">
-                Instant 3D Print Quote
-            </h1>
-            <p class="lead text-secondary-light mb-3 mb-lg-4">
-                Precision industrial-grade manufacturing. Upload your STL, OBJ, or STEP files
-                to get real-time pricing.
-            </p>
-        </div>
-        <div class="col-lg-4">
-            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-lg-end">
-                <div class="badge-card" role="status" aria-label="99.8 percent success rate">
-                    <i class="bi bi-check-circle-fill text-primary me-2" aria-hidden="true"></i>
-                    <span class="small fw-semibold">99.8% Success Rate</span>
+
+    <section aria-labelledby="hero-title" class="mb-4 mb-lg-5">
+        <div class="row align-items-center gy-3">
+            <div class="col-lg-8">
+                <h1 id="hero-title" class="display-5 display-lg-4 fw-bold text-white mb-3">
+                    Instant 3D Print Quote
+                </h1>
+                <p class="lead text-secondary-light mb-3 mb-lg-4">
+                    Precision industrial-grade manufacturing. Upload your STL, OBJ, or STEP files
+                    to get real-time pricing.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-lg-end">
+                    <div class="badge-card" role="status" aria-label="99.8 percent success rate">
+                        <i class="bi bi-check-circle-fill text-primary me-2" aria-hidden="true"></i>
+                        <span class="small fw-semibold">99.8% Success Rate</span>
+                    </div>
+                    <button type="button" class="badge-card badge-card-button" aria-label="Open material guide">
+                        <i class="bi bi-file-text me-2" aria-hidden="true"></i>
+                        <span class="small fw-semibold">Material Guide</span>
+                    </button>
                 </div>
-                <button type="button" class="badge-card badge-card-button" aria-label="Open material guide">
-                    <i class="bi bi-file-text me-2" aria-hidden="true"></i>
-                    <span class="small fw-semibold">Material Guide</span>
-                </button>
             </div>
         </div>
-    </div>
+    </section>
 </template>
 <script setup lang="ts"></script>
 <style scoped>
