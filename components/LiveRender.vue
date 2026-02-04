@@ -73,7 +73,7 @@ const initThreeJS = () => {
     const width = canvasRef.value.clientWidth
     const height = canvasRef.value.clientHeight
     camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
-    camera.position.set(5, 5, 5)
+    camera.position.set(2, 2, 3)
     camera.lookAt(0, 0, 0)
 
     // Renderer
@@ -97,9 +97,6 @@ const initThreeJS = () => {
     directionalLight2.position.set(-5, -5, -5)
     scene.add(directionalLight2)
 
-    // Grid helper (optional - helps see the scene)
-    const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222)
-    scene.add(gridHelper)
 
     // Controls
     controls = new OrbitControls(camera, renderer.domElement)
@@ -306,7 +303,6 @@ watch(() => props.file, (newFile) => {
     width: 100%;
     height: 100%;
     display: block;
-    min-height: 400px;
 }
 
 .viewer-placeholder {

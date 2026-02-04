@@ -166,4 +166,18 @@
     background-color: rgba(168, 85, 247, 0.15);
     color: #a855f7;
 }
+
+/* Form Select Dark */
+.form-select-dark {
+    background-color: #1a2942;
+    border: none;
+    color: #e5e7eb;
+    padding: 0.5rem 1rem;
+}
+
+.form-select-dark:focus {
+    background-color: #1a2942;
+    color: #e5e7eb;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
 </style>
