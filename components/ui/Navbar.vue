@@ -60,19 +60,21 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </form>
+                        <div v-if="isAuthenticated">
+                            <!-- Profile Button -->
+                            <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
+                                aria-label="Go to profile page">
+                                Profile
+                            </NuxtLink>
 
-                        <!-- Profile Button -->
-                        <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
-                            aria-label="Go to profile page">
-                            Profile
-                        </NuxtLink>
+                            <!-- User Avatar -->
+                            <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
+                                <div class="rounded-circle bg-gradient"
+                                    style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"
+                                    role="img" aria-label="User avatar"></div>
+                            </NuxtLink>
+                        </div>
 
-                        <!-- User Avatar -->
-                        <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
-                            <div class="rounded-circle bg-gradient"
-                                style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"
-                                role="img" aria-label="User avatar"></div>
-                        </NuxtLink>
                     </div>
                 </div>
             </div>
@@ -83,6 +85,7 @@
 <script setup lang="ts">
 const searchQuery = ref<string>('')
 
+const isAuthenticated = ref<boolean>(false) //TODO: Simulated authentication state
 const handleSearch = (): void => {
     if (searchQuery.value.trim()) {
         // Navigate to search results
@@ -116,7 +119,7 @@ useHead({
     script: [
         {
             type: 'application/ld+json',
-            children: JSON.stringify(organizationSchema)
+            //children: JSON.stringify(organizationSchema)
         }
     ]
 })

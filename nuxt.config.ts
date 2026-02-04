@@ -61,4 +61,6 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
   },
+
+  modules: ["@pinia/nuxt"],
 });
