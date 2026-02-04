@@ -37,7 +37,7 @@
                             </NuxtLink>
                         </li>
                         <li class="nav-item">
-                            <NuxtLink to="/my-prints" class="nav-link text-secondary-light" activeClass="text-white"
+                            <NuxtLink to="/prints" class="nav-link text-secondary-light" activeClass="text-white"
                                 aria-label="View your print orders">
                                 My Prints
                             </NuxtLink>
@@ -126,7 +126,7 @@ useHead({
     script: [
         {
             type: 'application/ld+json',
-            //children: JSON.stringify(organizationSchema)
+            innerHTML: JSON.stringify(organizationSchema)
         }
     ]
 })
