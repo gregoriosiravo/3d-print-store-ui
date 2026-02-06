@@ -60,7 +60,7 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </form>
-                        <div v-if="isAuthenticated">
+                        <div class="d-flex" v-if="isAuthenticated">
                             <!-- Profile Button -->
                             <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
                                 aria-label="Go to profile page">
@@ -92,7 +92,10 @@
 <script setup lang="ts">
 const searchQuery = ref<string>('')
 
-const isAuthenticated = ref<boolean>(false) //TODO: Simulated authentication state
+const isAuthenticated = computed(() => {
+    const store = useUserStore()
+    return store.isAuthenticated
+})
 const handleSearch = (): void => {
     if (searchQuery.value.trim()) {
         // Navigate to search results
@@ -103,7 +106,6 @@ const handleSearch = (): void => {
     }
 }
 
-// SEO: Define structured data for organization
 interface OrganizationSchema {
     '@context': string
     '@type': string

@@ -45,7 +45,7 @@ export const useUserStore = defineStore("user", {
       this.error = null;
       try {
         const response = await $fetch<{ user: User; token?: string }>(
-          "api/auth/login",
+          "http://localhost:4000/api/auth/login",
           {
             method: "POST",
             headers: {
@@ -55,12 +55,13 @@ export const useUserStore = defineStore("user", {
           },
         );
         this.user = response.user;
+        console.log("Login successful, user:", this.user);
         this.isAuthenticated = true;
 
         if (response.token) {
           useCookie("auth_token").value = response.token;
         }
-        await navigateTo("/dashboard");
+        await navigateTo("/");
       } catch (err) {
         console.error(err);
         this.error = "Login failed. Please try again.";

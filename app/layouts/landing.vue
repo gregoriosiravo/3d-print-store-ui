@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-// Add any layout-specific logic here
 </script>
 
 <style scoped>
