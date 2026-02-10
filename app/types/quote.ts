@@ -6,6 +6,8 @@ export interface Quote {
   filepath: string;
   config: QuoteConfig;
   pricing: QuotePricing;
+  materialWeightGrams: number;
+  estimatedPrintTimeMinutes: number;
   status: QuoteStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -22,10 +24,9 @@ export interface QuoteConfig {
 
 export interface QuotePricing {
   materialCost: number;
-  printTime: number;
-  serviceFee: number;
-  total: number;
-  currency: string;
+  totalPrice: number;
+  machineCost: number;
+  laborCost: number;
 }
 
 export enum QuoteStatus {

@@ -45,7 +45,7 @@ export const useUserStore = defineStore("user", {
       this.error = null;
       try {
         const response = await $fetch<{ user: User; token?: string }>(
-          "http://localhost:4000/api/auth/login",
+          `${useRuntimeConfig().public.API_BASE_URL}/auth/login`,
           {
             method: "POST",
             headers: {
@@ -83,24 +83,31 @@ export const useUserStore = defineStore("user", {
       }
     },
     async registerUser(
-      email: string,
-      password: string,
       firstName: string,
       lastName: string,
+      email: string,
+      password: string,
     ) {
       try {
-        await $fetch<{ user: User; token?: string }>("api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await $fetch<{ user: User; token?: string }>(
+          `${useRuntimeConfig().public.API_BASE_URL}/auth/register`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email,
+              password: password,
+              firstName: firstName,
+              lastName: lastName,
+            }),
           },
-          body: JSON.stringify({
-            email: email,
-            password: password,
-            firstName: firstName,
-            lastName: lastName,
-          }),
-        });
+        );
+        this.user = response.user;
+        console.log("Register and Login successful, user:", this.user);
+        this.isAuthenticated = true;
+        await navigateTo("/"); //TODO: dinamically navigate to the last page visited or to the profile page
       } catch (err) {
         console.error("Navigation to register failed:", err);
       }

@@ -5,13 +5,16 @@
             <div class="row g-3 g-lg-4">
                 <div class="col-lg-8">
                     <Upload @file-selected="handleFileSelected" />
-                    <Settings></Settings>
+                    <Settings @profile-selected="handleProfileSelected" @material-selected="handleMaterialSelected">
+                    </Settings>
                 </div>
                 <div class="col-lg-4">
                     <LiveRender :file="uploadedFile" />
 
                     <!-- Quote Summary -->
-                    <QuoteSummary />
+                    <QuoteSummary :quote="quote" :pricing="pricing" :fileName="uploadedFile?.name || null"
+                        :materialWeightGrams="materialWeightGrams"
+                        :estimatedPrintTimeMinutes="estimatedPrintTimeMinutes" />
 
                     <!-- Stats Cards -->
                     <div class="row g-2 g-sm-3 mt-2">
@@ -39,18 +42,74 @@
 
 <script setup lang="ts">
 import LiveRender from '~/components/LiveRender.vue'
+import { storeToRefs } from 'pinia'
 
 definePageMeta({
     layout: "landing"
 })
 
+const store = useQuoteStore()
+
+const { quote, pricing, materialWeightGrams, estimatedPrintTimeMinutes } = storeToRefs(store)
+const formData = reactive({
+    stl: null as File | null,
+    materialId: null as number | null,
+    printConfigId: null as number | null
+})
+
 const uploadedFile = ref<File | null>(null)
 
 const handleFileSelected = (file: File) => {
-    console.log('File selected:', file.name)
     uploadedFile.value = file
+    formData.stl = file
 }
+const handleMaterialSelected = (material: any) => {
+    formData.materialId = material.id;
+}
+const handleProfileSelected = (profile: any) => {
+    let profileId: number | null = checkPrintProfile(profile);
+    formData.printConfigId = profileId;
+}
+const checkPrintProfile = (profile: any): number | null => {
+    const infill = typeof profile.infillDensity === 'string'
+        ? parseInt(profile.infillDensity)
+        : profile.infillDensity
+    if (profile.layerHeight === '0.3mm' && infill === 15) return 1
+    if (profile.layerHeight === '0.2mm' && infill === 25) return 2
+    if (profile.layerHeight === '0.1mm' && infill === 25) return 3
+    if (profile.layerHeight === '0.2mm' && infill === 50) return 4
+    return 2 // Default to Standard Quality if no match
+}
+const isRequestInProgress = ref(false)
+watch(
+    formData,
+    async (newFormData) => {
+        // Check if all required fields are filled
+        if (newFormData.stl && newFormData.materialId && newFormData.printConfigId) {
+            console.log('Calculating quote with form data:', newFormData)
+            if (isRequestInProgress.value) {
+                console.log('Request already in progress, skipping...')
+                return
+            }
+            isRequestInProgress.value = true
+            try {
+                const payload = new FormData()
+                payload.append('stl', newFormData.stl)
+                payload.append('materialId', newFormData.materialId.toString())
+                payload.append('printConfigId', newFormData.printConfigId.toString())
 
+                await store.createQuote(payload)
+
+            } catch (error) {
+                console.error('Error creating quote:', error)
+                // Handle error (show notification, etc.)
+            } finally {
+                isRequestInProgress.value = false
+            }
+        }
+    },
+    { deep: true }
+)
 useHead({
     title: 'Instant 3D Print Quote - PrintFlow 3D',
     meta: [

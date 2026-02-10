@@ -36,7 +36,7 @@
                                 Materials
                             </NuxtLink>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" v-if="isAuthenticated">
                             <NuxtLink to="/prints" class="nav-link text-secondary-light" activeClass="text-white"
                                 aria-label="View your print orders">
                                 My Prints

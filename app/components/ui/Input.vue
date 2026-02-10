@@ -1,5 +1,6 @@
 <template>
-    <input :type="type" class="btn-check" :name="name" :id="id" :autocomplete="autocomplete" :checked="checked">
+    <input :type="type" class="btn-check" :name="name" :id="id" :autocomplete="autocomplete" :checked="checked"
+        @change="handleChange">
     <label :class="labelClass" :for="labelFor || id" :style="labelStyle" :aria-label="ariaLabel">
         <slot></slot>
     </label>
@@ -47,6 +48,13 @@ const props = defineProps({
         default: ''
     }
 })
+const emit = defineEmits({
+    chosen: (value: boolean) => true
+})
+const handleChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    emit('chosen', target.checked)
+}
 </script>
 
 
