@@ -84,7 +84,10 @@ const isRequestInProgress = ref(false)
 watch(
     formData,
     async (newFormData) => {
-        // Check if all required fields are filled
+        if (newFormData.stl) {
+            if (!newFormData.materialId) newFormData.materialId = 1
+            if (!newFormData.printConfigId) newFormData.printConfigId = 2
+        }
         if (newFormData.stl && newFormData.materialId && newFormData.printConfigId) {
             console.log('Calculating quote with form data:', newFormData)
             if (isRequestInProgress.value) {

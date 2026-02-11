@@ -105,4 +105,4 @@ const hasPricing = computed(() => props.pricing !== null)
     border-radius: 0.75rem;
     padding: 1rem;
 }
-</style>
+</style>dddd

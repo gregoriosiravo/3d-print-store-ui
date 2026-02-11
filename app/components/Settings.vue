@@ -64,13 +64,13 @@
                         Layer Height
                     </legend>
                     <div class="btn-group w-100" role="group" aria-label="Layer height options">
-                        <UiInput id="layer01" name="layerHeight" type="radio" :checked="true"
-                            label-class="btn btn-layer" @chosen="handleLayerHeightSelect('0.1mm')">
+                        <UiInput id="layer01" name="layerHeight" type="radio" label-class="btn btn-layer"
+                            @chosen="handleLayerHeightSelect('0.1mm')">
                             0.1mm
                         </UiInput>
 
                         <UiInput id="layer02" name="layerHeight" type="radio" label-class="btn btn-layer"
-                            @chosen="handleLayerHeightSelect('0.2mm')">
+                            :checked="true" @chosen="handleLayerHeightSelect('0.2mm')">
                             0.2mm
                         </UiInput>
 
@@ -87,8 +87,8 @@
                 </label>
                 <select id="infillDensity" class="form-select form-select-dark" aria-label="Select infill density"
                     @change="handleInfillChange">
-                    <option value="15" selected>15% (Standard)</option>
-                    <option value="25">25% (Medium)</option>
+                    <option value="15">15% (Standard)</option>
+                    <option value="25" selected>25% (Medium)</option>
                     <option value="50">50% (High)</option>
                     <option value="100">100% (Solid)</option>
                 </select>
