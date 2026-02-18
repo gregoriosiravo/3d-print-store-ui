@@ -35,8 +35,32 @@
                 <dd class="text-white mb-0">€{{ formattedServiceCost }}</dd>
             </div>
         </dl>
+        <div class="delivery-info mb-3" role="status" aria-live="polite">
+            <div class="d-flex gap-2">
+                <i class="bi bi-truck text-primary mt-1 flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                    <div class="small fw-semibold text-white mb-1">Estimated Delivery</div>
+                    <div class="small text-secondary-light">
+                        {{ deliveryDate }} (Express Delivery)
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <!-- Rest of your component -->
+        <!-- Action Buttons -->
+        <div class="row g-2">
+            <div class="col-6">
+                <button type="button" class="btn btn-outline-secondary w-100" aria-label="Save current configuration">
+                    Save Config
+                </button>
+            </div>
+            <div class="col-6">
+                <button type="button" class="btn btn-primary w-100" aria-label="Proceed to checkout and order now">
+                    <i class="bi bi-cart-fill me-1" aria-hidden="true"></i>
+                    Order Now
+                </button>
+            </div>
+        </div>
     </section>
 </template>
 
@@ -50,6 +74,16 @@ const props = defineProps<{
     materialWeightGrams: number | null
     estimatedPrintTimeMinutes: number | null
 }>()
+
+
+const deliveryDate = computed(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    date.setDate(date.getDate() + 6);
+    const formattedLong = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatted + ' - ' + formattedLong;
+})
 
 const formattedTotalPrice = computed(() =>
     props.pricing?.totalPrice?.toFixed(2) ?? '0.00'

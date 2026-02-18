@@ -51,8 +51,8 @@
                         <form class="d-none d-md-block position-relative" role="search" @submit.prevent="handleSearch">
                             <label for="searchInput" class="visually-hidden">Search 3D models</label>
                             <input id="searchInput" v-model="searchQuery"
-                                class="form-control form-control-sm bg-dark-lighter text-light border-0 ps-5"
-                                type="search" placeholder="Search models..." aria-label="Search 3D models"
+                                class="form-control form-control-sm border-0 ps-5" type="search"
+                                placeholder="Search models..." aria-label="Search 3D models"
                                 style="width: 250px; padding: 0.5rem 1rem 0.5rem 2.5rem;" />
                             <svg class="position-absolute text-secondary"
                                 style="left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; pointer-events: none;"
