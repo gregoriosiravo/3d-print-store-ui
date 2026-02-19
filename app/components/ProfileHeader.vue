@@ -1,39 +1,42 @@
 <template>
-    <div class="row my-3 header-profile">
+    <div class="row my-3 header-profile" role="region" aria-labelledby="customer-information">
         <div class="col-md-3 text-center m-auto">
             <img class="profile-image" src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                alt="profile image">
+                :alt="profilePictureAlt">
         </div>
-        <div class="col-md-4 text-start my-1">
+        <div id="customer-info" class="col-md-4 text-start my-1">
             <div class="row">
-                <h2>NOME Utente</h2>
+                <h1 class="h3">NOME Utente</h1>
             </div>
             <div class="row">
-                <p>@id_utente - created_at</p>
+                <p class="visually-hidden">User ID</p>
+                <span class="text-small">@id_utente - created_at</span>
             </div>
-            <div class="row">
-                <div class="col-4">
+            <div class="row" role="list" aria-label="User statistics">
+                <div class="col-4" role="listitem">
                     <span class="text-xs">Total Prints</span>
                     <p>30</p>
                 </div>
-                <div class="col-4">
+                <div class="col-4" role="listitem">
                     <span class="text-xs">STL Assets</span>
                     <p>10</p>
                 </div>
-                <div class="col-4">
+                <div class="col-4" role="listitem">
                     <span class="text-xs">Credits</span>
                     <p>200</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-5 m-auto text-end">
-            <button class="btn btn-primary ">Edit Profile</button>
-            <button class="btn btn-light ms-2"><i class="bi bi-share"></i></button>
+        <div id="button-header" class="col-md-5 m-auto text-end">
+            <button class="btn btn-primary " aria-label="Edit profile">Edit Profile</button>
+            <button class="btn btn-light ms-2" aria-label="Share profile"><i class="bi bi-share"></i></button>
         </div>
     </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const profilePictureAlt = ref("Profile picture of USERNAME")
+</script>
 
 <style scoped>
 .profile-image {
@@ -51,9 +54,30 @@
 
 }
 
+.text-small {
+    font-size: small;
+}
+
 .header-profile {
     border: 2px solid #0f2036;
     border-radius: 10px;
     background-color: #101926;
+}
+
+@media (max-width: 750px) {
+    #button-header {
+        text-align: center !important;
+        margin-bottom: 10px !important;
+
+    }
+
+    #customer-info {
+        text-align: center !important;
+    }
+
+    .profile-image {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 }
 </style>
