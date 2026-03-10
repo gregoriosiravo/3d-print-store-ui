@@ -1,50 +1,39 @@
 <template>
-    <div class="col-md-9">
-        <h3 class="h5"><i class="bi bi-bag"></i> {{ props.tableName }}</h3>
-        <div class="card bg-dark border-0 rounded-4 pb-3">
-            <table class="table mb-0 align-middle text-white" data-bs-theme="dark" data-bs-table-bg="none">
-                <thead class="small text-secondary">
-                    <tr>
-                        <th v-for="column in props.columns">{{ column }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Turbo Fan Hub</td>
-                        <td class="text-secondary">#ORD-2024-991</td>
-                        <td>
-                            <span class="badge rounded-pill status-printing">PRINTING</span>
-                        </td>
-                        <td class="text-end fw-semibold">$42.50</td>
-                        <td class="text-end">
-                            <i class="bi bi-three-dots-vertical action-dots"></i>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Flexi‑Dragon Articulated</td>
-                        <td class="text-secondary">#ORD-2024-884</td>
-                        <td>
-                            <span class="badge rounded-pill status-shipped">SHIPPED</span>
-                        </td>
-                        <td class="text-end fw-semibold">$18.20</td>
-                        <td class="text-end">
-                            <i class="bi bi-three-dots-vertical action-dots"></i>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+
+    <h3 class="h5"><i class="bi bi-bag"></i> {{ props.tableName }}</h3>
+    <div class="card bg-dark border-0 rounded-4 pb-3">
+        <table class="table mb-0 align-middle text-white" data-bs-theme="dark" data-bs-table-bg="none">
+            <thead class="small text-secondary">
+                <tr>
+                    <th v-for="column in props.columns">{{ column }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in items">
+                    <td>{{ item.stl_filename }}</td>
+                    <td class="text-secondary">{{ type == 'quotes' ? '#QUOTE-' + item.id : '#ORDER-' + item.id }}</td>
+                    <td>
+                        <span class="badge rounded-pill status-printing">{{ item.status }}</span>
+                    </td>
+                    <td class="text-end fw-semibold">{{ item.total_price }}</td>
+                    <td class="text-end">
+                        <i class="bi bi-three-dots-vertical action-dots"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </template>
 
 <script setup lang="ts">
+import type { Quote } from '~/types/quote'
 
-const props = defineProps({
-    tableName: String,
-    columns: Array,
-    items: Object
-})
-
+const props = defineProps<{
+    tableName: string
+    type: string
+    columns: string[]
+    items: Record<string, any>[]
+}>()
 </script>
 
 <style scoped>
@@ -62,7 +51,6 @@ thead {
 
 .table[data-bs-theme="dark"]> :not(caption)>*>* {
     background-color: transparent !important;
-    /* cells same as card [web:23] */
     box-shadow: none;
 }
 

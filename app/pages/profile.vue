@@ -3,9 +3,15 @@
         <ProfileHeader :user="user!"></ProfileHeader>
         <!-- Left Column -->
         <div class="row mb-3">
-            <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)">
-            </Table>
-            <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History"></Table>
+            <div class="col-md-9">
+                <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)"
+                    :items="quotes" type="quotes">
+                </Table>
+                <br>
+                <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="quotes"
+                    type="orders">
+                </Table>
+            </div>
             <!-- Right Column -->
             <div class="col-md-3">
                 <section id="shipping">
@@ -13,6 +19,7 @@
                         <h3 class="h5"><i class="bi bi-truck "></i> Shipping</h3>
                         <p class="ps-4">add new</p>
                     </div>
+
                     <!-- TODO: ADD FOREACH FOR ADDRESSES -->
                     <div class="card">
                         <div class="d-flex">
@@ -77,14 +84,15 @@ definePageMeta({
     layout: "landing",
     middleware: ["auth"]
 })
+onMounted(async () => {
+    await quoteStore.fetchUserQuotes()
+    console.log("Fetched user quotes:", quoteStore.getUserQuotes)
+})
 const userStore = useUserStore();
+const quoteStore = useQuoteStore();
 
 const user = computed(() => userStore.user);
-//const orders = computed(() => userStore.orders);
-
-const isAuthenticated = computed(() => {
-    return userStore.isAuthenticated;
-})
+const quotes = computed(() => quoteStore.getUserQuotes)
 
 </script>
 

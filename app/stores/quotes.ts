@@ -18,6 +18,9 @@ export const useQuoteStore = defineStore("quote", {
     hasError: (state): string | null => state.error,
     totalPrice: (state): number => state.pricing?.totalPrice || 0,
     quoteId: (state): string | null => state.quote?.quoteId || null,
+    getUserQuotes: (state): Record<string, any>[] => {
+      return state.quotes ?? [];
+    },
   },
   actions: {
     async createQuote(formData: FormData) {
@@ -60,6 +63,29 @@ export const useQuoteStore = defineStore("quote", {
       } catch (error) {
         console.error("Error associating quote with user:", error);
         this.error = "Failed to associate quote with user.";
+      }
+    },
+    async fetchUserQuotes() {
+      this.loading = true;
+      this.error = null;
+      try {
+        const data = await $fetch<{ quotes: Quote[] }>(
+          `${useRuntimeConfig().public.API_BASE_URL}/quotes`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+          },
+        );
+
+        this.quotes = data.quotes;
+        console.log("Fetched user quotes successfully:", this.quotes);
+      } catch (err) {
+        console.error("Failed to fetch user quotes:", err);
+        this.error = "Failed to fetch quotes. Please try again.";
+      } finally {
+        this.loading = false;
       }
     },
   },
