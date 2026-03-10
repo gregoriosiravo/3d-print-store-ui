@@ -58,7 +58,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
+const route = useRoute()
 const store = useUserStore()
+const quoteStore = useQuoteStore()
 definePageMeta({
     layout: "landing"
 })
@@ -103,10 +105,24 @@ const handleLogin = async () => {
         validationErrors.password.error = !user.password;
         return;
     }
-    await store.login(user.email, user.password);
+    try {
+        await store.login(user.email, user.password);
+        await store.fetchUser()
+        const userId = store.userId;
+        const action = route.query.action
+        const quoteId = route.query.quoteId
+        if (action === 'save-quote' && quoteId && userId) {
+            await quoteStore.associateQuoteWithUser(userId, quoteId as string)
+        }
+
+        const redirectPath = (route.query.redirect as string) || '/profile'
+        await navigateTo(redirectPath)
+    } catch (error) {
+        validationErrors.password.value = 'Invalid email or password';
+        validationErrors.password.error = true;
+    }
+
 }
-
-
 
 const switchToRegister = () => {
     isLogin.value = false;
@@ -131,6 +147,17 @@ const handleRegister = async () => {
         return;
     }
     await store.registerUser(user.firstName, user.lastName, user.email, user.password);
+    await store.fetchUser()
+
+    const action = route.query.action
+    const quoteId = route.query.quoteId
+
+    if (action === 'save-quote' && quoteId) {
+        await quoteStore.associateQuoteWithUser(store.userId ?? "", quoteId as string)
+    }
+
+    const redirectPath = (route.query.redirect as string) || '/profile'
+    await navigateTo(redirectPath)
 }
 </script>
 

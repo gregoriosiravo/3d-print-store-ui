@@ -14,7 +14,8 @@
                     <!-- Quote Summary -->
                     <QuoteSummary :quote="quote" :pricing="pricing" :fileName="uploadedFile?.name || null"
                         :materialWeightGrams="materialWeightGrams"
-                        :estimatedPrintTimeMinutes="estimatedPrintTimeMinutes" />
+                        :estimatedPrintTimeMinutes="estimatedPrintTimeMinutes" @save-quote="handleSaveQuote"
+                        @order-now="handleOrderNow" />
 
                     <!-- Stats Cards -->
                     <div class="row g-2 g-sm-3 mt-2">
@@ -48,15 +49,19 @@ definePageMeta({
     layout: "landing"
 })
 
-const store = useQuoteStore()
+const quoteStore = useQuoteStore()
+const userStore = useUserStore()
+const router = useRouter()
 
-const { quote, pricing, materialWeightGrams, estimatedPrintTimeMinutes } = storeToRefs(store)
+const { quote, pricing, materialWeightGrams, estimatedPrintTimeMinutes } = storeToRefs(quoteStore)
 const formData = reactive({
     stl: null as File | null,
     materialId: null as number | null,
     printConfigId: null as number | null
 })
-
+const isAuthenticated = computed(() => {
+    return userStore.isAuthenticated;
+})
 const uploadedFile = ref<File | null>(null)
 
 const handleFileSelected = (file: File) => {
@@ -101,11 +106,10 @@ watch(
                 payload.append('materialId', newFormData.materialId.toString())
                 payload.append('printConfigId', newFormData.printConfigId.toString())
 
-                await store.createQuote(payload)
+                await quoteStore.createQuote(payload)
 
             } catch (error) {
                 console.error('Error creating quote:', error)
-                // Handle error (show notification, etc.)
             } finally {
                 isRequestInProgress.value = false
             }
@@ -113,6 +117,31 @@ watch(
     },
     { deep: true }
 )
+const handleSaveQuote = () => {
+    if (isAuthenticated.value && quoteStore.quoteId && userStore.userId) {
+        quoteStore.associateQuoteWithUser(userStore.userId, quoteStore.quoteId)
+        alert('Quote saved successfully!')
+    } else {
+        navigateTo({
+            path: '/login',
+            query: {
+                action: 'save-quote',
+                quoteId: quoteStore.quoteId
+            }
+        })
+    }
+}
+
+const handleOrderNow = () => {
+    if (isAuthenticated.value) {
+        alert('Proceeding to checkout!')
+    } else {
+        router.push('/login')
+        alert('Please log in to proceed to checkout.')
+    }
+}
+
+// SEO Meta Tags
 useHead({
     title: 'Instant 3D Print Quote - PrintFlow 3D',
     meta: [
@@ -170,10 +199,10 @@ useHead({
         }
     ]
 })
+
 </script>
 
 <style scoped>
-/* Stat Cards */
 .stat-card {
     background-color: #0d1b2e;
     border: 1px solid #374151;

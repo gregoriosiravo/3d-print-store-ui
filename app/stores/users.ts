@@ -19,7 +19,7 @@ export const useUserStore = defineStore("user", {
     isLoggedIn: (state): boolean => {
       return state.user !== null && state.isAuthenticated;
     },
-    userName: (state): string => {
+    fullName: (state): string => {
       return state.user
         ? `${state.user.firstName} ${state.user.lastName}`
         : "Guest";
@@ -38,6 +38,7 @@ export const useUserStore = defineStore("user", {
     isAdmin: (state) => {
       return state.user?.role === "admin";
     },
+    userId: (state): string | null => state.user?.id || null,
   },
   actions: {
     async login(email: string, password: string) {
@@ -54,10 +55,9 @@ export const useUserStore = defineStore("user", {
             body: JSON.stringify({ email, password }),
           },
         );
-        this.user = response.user;
-        console.log("Login successful, user:", this.user);
-        this.isAuthenticated = true;
 
+        console.log("Login successful");
+        this.isAuthenticated = true;
         if (response.token) {
           useCookie("auth_token").value = response.token;
         }
@@ -104,12 +104,33 @@ export const useUserStore = defineStore("user", {
             }),
           },
         );
-        this.user = response.user;
-        console.log("Register and Login successful, user:", this.user);
         this.isAuthenticated = true;
+        console.log("Register and Login successful, user:", this.user);
         await navigateTo("/"); //TODO: dinamically navigate to the last page visited or to the profile page
       } catch (err) {
         console.error("Navigation to register failed:", err);
+      }
+    },
+    async fetchUser() {
+      try {
+        const response = await fetch(
+          `${useRuntimeConfig().public.API_BASE_URL}/auth/profile`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+          },
+        );
+        const userData = await response.json();
+        console.log("Fetched user data:", userData);
+        this.user = {
+          ...userData,
+          createdAt: new Date(userData.createdAt),
+        };
+      } catch (err) {
+        console.error("Fetch user failed:", err);
       }
     },
     //TODO: add update profile action

@@ -4,9 +4,9 @@ export interface User {
   lastName: string;
   email: string;
   avatarUrl?: string;
-  role: UserRole; //TODO: add to the DB Table
+  username?: string;
+  role: UserRole;
   createdAt: Date;
-  isAuthenticated: boolean;
 }
 
 export enum UserRole {

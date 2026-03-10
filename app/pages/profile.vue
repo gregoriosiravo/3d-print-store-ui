@@ -1,50 +1,13 @@
 <template>
-    <UiContainer>
-        <ProfileHeader></ProfileHeader>
+    <UiContainer v-if="isAuthenticated && user">
+        <ProfileHeader :user="user"></ProfileHeader>
         <!-- Left Column -->
         <div class="row mb-3">
-            <div class="col-md-8">
-                <h3 class="h5"><i class="bi bi-bag"></i> Recent Orders</h3>
-                <div class="card bg-dark border-0 rounded-4 pb-3">
-                    <table class="table mb-0 align-middle text-white" data-bs-theme="dark" data-bs-table-bg="none">
-                        <thead class="small text-secondary">
-                            <tr>
-                                <th>Item</th>
-                                <th>Order Id</th>
-                                <th>Status</th>
-                                <th class="text-end">Amount</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Turbo Fan Hub</td>
-                                <td class="text-secondary">#ORD-2024-991</td>
-                                <td>
-                                    <span class="badge rounded-pill status-printing">PRINTING</span>
-                                </td>
-                                <td class="text-end fw-semibold">$42.50</td>
-                                <td class="text-end">
-                                    <i class="bi bi-three-dots-vertical action-dots"></i>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Flexi‑Dragon Articulated</td>
-                                <td class="text-secondary">#ORD-2024-884</td>
-                                <td>
-                                    <span class="badge rounded-pill status-shipped">SHIPPED</span>
-                                </td>
-                                <td class="text-end fw-semibold">$18.20</td>
-                                <td class="text-end">
-                                    <i class="bi bi-three-dots-vertical action-dots"></i>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)">
+            </Table>
+            <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History"></Table>
             <!-- Right Column -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <section id="shipping">
                     <div class="d-flex">
                         <h3 class="h5"><i class="bi bi-truck "></i> Shipping</h3>
@@ -68,34 +31,32 @@
                         <h3 class="h5"><i class="bi bi-credit-card "></i> Payments</h3>
                         <p class="ps-4">ADD</p>
                     </div>
-                    <div class="credit-card-container p-0">
-                        <div class="credit-card">
-                            <!-- Chip -->
-                            <div class="chip">
-                                <i class="bi bi-credit-card-fill"></i> <!-- or use SVG -->
-                            </div>
+                    <div class="credit-card">
+                        <!-- Chip -->
+                        <div class="chip">
+                            <i class="bi bi-credit-card-fill"></i> <!-- or use SVG -->
+                        </div>
 
-                            <!-- VISA logo -->
-                            <div class="visa-logo">
-                                VISA
-                            </div>
+                        <!-- VISA logo -->
+                        <div class="visa-logo">
+                            VISA
+                        </div>
 
-                            <!-- Card number (dotted + last 4) -->
-                            <div class="card-number">
-                                <span class="dots">•••• •••• ••••</span>
-                                <span class="last-four">4242</span>
-                            </div>
+                        <!-- Card number (dotted + last 4) -->
+                        <div class="card-number">
+                            <span class="dots">•••• •••• •••• </span>
+                            <span class="last-four">4242</span>
+                        </div>
 
-                            <!-- Labels & values -->
-                            <div class="card-details">
-                                <div class="detail-group">
-                                    <small class="label">CARD HOLDER</small>
-                                    <div class="value">ALEX STERLING</div>
-                                </div>
-                                <div class="detail-group">
-                                    <small class="label">EXPIRES</small>
-                                    <div class="value">09/26</div>
-                                </div>
+                        <!-- Labels & values -->
+                        <div class="card-details">
+                            <div class="detail-group">
+                                <small class="label">CARD HOLDER</small>
+                                <div class="value">ALEX STERLING</div>
+                            </div>
+                            <div class="detail-group">
+                                <small class="label">EXPIRES</small>
+                                <div class="value">09/26</div>
                             </div>
                         </div>
                     </div>
@@ -109,68 +70,24 @@
 </template>
 
 <script setup lang="ts">
+import Table from '~/components/profile/Table.vue';
+
+
 definePageMeta({
     layout: "landing"
 })
 const userStore = useUserStore();
 
+const user = computed(() => userStore.user);
+//const orders = computed(() => userStore.orders);
+
 const isAuthenticated = computed(() => {
-    userStore.isAuthenticated;
+    return userStore.isAuthenticated;
 })
 
 </script>
 
 <style scoped>
-thead {
-    background-color: #0f1c2e !important;
-    border-radius: 10px !important;
-}
-
-.table[data-bs-theme="dark"] {
-    --bs-table-bg: transparent;
-    /* remove Bootstrap table background [web:2] */
-    --bs-table-border-color: transparent;
-    color: #e6edf7;
-}
-
-.table[data-bs-theme="dark"]> :not(caption)>*>* {
-    background-color: transparent !important;
-    /* cells same as card [web:23] */
-    box-shadow: none;
-}
-
-.card.bg-dark {
-    border: 2px solid #0f2036 !important;
-    border-radius: 10px;
-    background-color: #0f1926 !important;
-}
-
-.status-printing {
-    color: #4aa3ff;
-    background-color: rgba(74, 163, 255, 0.12);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-}
-
-
-.status-shipped {
-    color: #22c55e;
-    background-color: rgba(34, 197, 94, 0.12);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-}
-
-.action-dots {
-    color: #6b7b93;
-    cursor: pointer;
-    transition: color 0.15s ease, transform 0.15s ease;
-}
-
-.action-dots:hover {
-    color: #e6edf7;
-    transform: scale(1.1);
-}
-
 /* SHipping section */
 .default-address {
     color: #fff;
@@ -203,17 +120,7 @@ thead {
 }
 
 /* Payment Section */
-.credit-card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-    background: linear-gradient(135deg, #0f1926 0%, #1a2535 100%);
-    padding: 2rem;
-}
-
 .credit-card {
-    width: 340px;
     height: 220px;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
@@ -263,11 +170,13 @@ thead {
 
 /* Card number */
 .card-number {
+    margin: 0 auto;
+    min-width: 100%;
     position: absolute;
-    bottom: 60px;
+    bottom: 80px;
     left: 24px;
     right: 24px;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 500;
     letter-spacing: 2px;
     color: rgba(255, 255, 255, 0.95);
@@ -315,7 +224,7 @@ thead {
 @media (max-width: 576px) {
     .credit-card {
         width: 100%;
-        max-width: 300px;
+        max-width: 310px;
         height: 180px;
         padding: 20px;
     }

@@ -6,11 +6,11 @@
         </div>
         <div id="customer-info" class="col-md-4 text-start my-1">
             <div class="row">
-                <h1 class="h3">NOME Utente</h1>
+                <h1 class="h3">{{ user.firstName }} {{ user.lastName }}</h1>
             </div>
             <div class="row">
                 <p class="visually-hidden">User ID</p>
-                <span class="text-small">@id_utente - created_at</span>
+                <span class="text-small">@{{ user.username }} - {{ user.createdAt.toLocaleDateString() }}</span>
             </div>
             <div class="row" role="list" aria-label="User statistics">
                 <div class="col-4" role="listitem">
@@ -35,7 +35,15 @@
 </template>
 
 <script setup lang="ts">
+import type { User } from '@/types/user'
 const profilePictureAlt = ref("Profile picture of USERNAME")
+
+interface Props {
+    user: User
+}
+
+const props = defineProps<Props>()
+
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Quote, QuotePricing } from "~/types/quote";
+import { useUserStore } from "./users";
 
 export const useQuoteStore = defineStore("quote", {
   state: () => ({
@@ -16,6 +17,7 @@ export const useQuoteStore = defineStore("quote", {
     isLoading: (state): boolean => state.loading,
     hasError: (state): string | null => state.error,
     totalPrice: (state): number => state.pricing?.totalPrice || 0,
+    quoteId: (state): string | null => state.quote?.quoteId || null,
   },
   actions: {
     async createQuote(formData: FormData) {
@@ -39,6 +41,25 @@ export const useQuoteStore = defineStore("quote", {
         this.error = "Failed to create quote. Please try again.";
       } finally {
         this.loading = false;
+      }
+    },
+    async associateQuoteWithUser(userId: string, quoteId: string) {
+      try {
+        const response = await $fetch(
+          `${useRuntimeConfig().public.API_BASE_URL}/quote/associate`,
+          {
+            method: "POST",
+            body: { userId, quoteId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+          },
+        );
+        console.log("Quote associated successfully:", response);
+      } catch (error) {
+        console.error("Error associating quote with user:", error);
+        this.error = "Failed to associate quote with user.";
       }
     },
   },

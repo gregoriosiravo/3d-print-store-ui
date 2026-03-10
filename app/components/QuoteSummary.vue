@@ -50,12 +50,14 @@
         <!-- Action Buttons -->
         <div class="row g-2">
             <div class="col-6">
-                <button type="button" class="btn btn-outline-secondary w-100" aria-label="Save current configuration">
-                    Save Config
+                <button @click="saveQuote()" :disabled="!quote" type="button" class="btn btn-outline-secondary w-100"
+                    aria-label="Save current configuration">
+                    Save Quote
                 </button>
             </div>
             <div class="col-6">
-                <button type="button" class="btn btn-primary w-100" aria-label="Proceed to checkout and order now">
+                <button @click="orderNow()" :disabled="!quote" type="button" class="btn btn-primary w-100"
+                    aria-label="Proceed to checkout and order now">
                     <i class="bi bi-cart-fill me-1" aria-hidden="true"></i>
                     Order Now
                 </button>
@@ -112,6 +114,20 @@ const formattedPrintTime = computed(() =>
 )
 
 const hasPricing = computed(() => props.pricing !== null)
+
+const emit = defineEmits(
+    ['saveQuote', 'orderNow']
+);
+
+const saveQuote = () => {
+    emit('saveQuote')
+
+}
+
+const orderNow = () => {
+    emit('orderNow')
+}
+
 </script>
 
 
