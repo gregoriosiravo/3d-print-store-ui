@@ -8,7 +8,7 @@
                     :items="quotes" type="quotes" @accept="handleAccept" @decline="handleDecline">
                 </Table>
                 <br>
-                <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="quotes"
+                <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="orders"
                     type="orders">
                 </Table>
             </div>
@@ -87,12 +87,16 @@ definePageMeta({
 onMounted(async () => {
     await quoteStore.fetchUserQuotes()
     console.log("Fetched user quotes:", quoteStore.getUserQuotes)
+    await orderStore.fetchUserOrders()
+    console.log("Fetched user orders:", orderStore.getUserOrders)
 })
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
+const orderStore = useOrderStore();
 
 const user = computed(() => userStore.user);
 const quotes = computed(() => quoteStore.getUserQuotes)
+const orders = computed(() => orderStore.getUserOrders)
 
 const handleAccept = (data: any) => {
     console.log("Accepting quote:", data)

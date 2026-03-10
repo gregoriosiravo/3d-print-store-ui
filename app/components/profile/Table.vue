@@ -11,21 +11,22 @@
             <tbody>
                 <tr v-for="item in items">
                     <td>{{ item.stl_filename }}</td>
-                    <td class="text-secondary">{{ type == 'quotes' ? '#QUOTE-' + item.id : '#ORDER-' + item.id }}</td>
+                    <td class="text-secondary">{{ type == 'quotes' ? '#QUO-' + item.id : '#' + item.order_number
+                    }}</td>
                     <td>
                         <span class="badge rounded-pill  text-uppercase"
                             :class="item.status === 'pending' ? 'status-printing' : 'status-shipped'">{{ item.status
                             }}</span>
                     </td>
-                    <td class="text-end fw-semibold">{{ item.total_price }}</td>
+                    <td class="text-end fw-semibold">{{ item.total_price || item.total_amount }}</td>
                     <td class="text-end position-relative" v-if="item.status != 'accepted'">
                         <i class="bi bi-three-dots-vertical action-dots" @click.stop="toggleMenu(item.id)"></i>
                         <div v-if="openMenuId === item.id" class="action-menu">
                             <button class="action-menu-item text-success btn btn-sm" @click="emit('accept', item)">
-                                <i class="bi bi-check-lg"></i> Accept
+                                <i class="bi bi-check-lg"></i> {{ type == 'quotes' ? 'Accept' : 'Pay' }}
                             </button>
                             <button class="action-menu-item text-danger btn btn-sm" @click="emit('decline', item)">
-                                <i class="bi bi-x-lg"></i> Decline
+                                <i class="bi bi-x-lg"></i> {{ type == 'quotes' ? 'Decline' : 'Cancel' }}
                             </button>
                         </div>
                     </td>
@@ -36,7 +37,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Quote } from '~/types/quote'
 
 const props = defineProps<{
     tableName: string
