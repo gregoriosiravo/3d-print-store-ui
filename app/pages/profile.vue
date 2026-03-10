@@ -5,7 +5,7 @@
         <div class="row mb-3">
             <div class="col-md-9">
                 <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)"
-                    :items="quotes" type="quotes">
+                    :items="quotes" type="quotes" @accept="handleAccept" @decline="handleDecline">
                 </Table>
                 <br>
                 <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="quotes"
@@ -94,6 +94,15 @@ const quoteStore = useQuoteStore();
 const user = computed(() => userStore.user);
 const quotes = computed(() => quoteStore.getUserQuotes)
 
+const handleAccept = (data: any) => {
+    console.log("Accepting quote:", data)
+    quoteStore.approveQuote(data.id, data.total_price);
+}
+
+const handleDecline = (data: any) => {
+    console.log("Declining quote:", data)
+    quoteStore.rejectQuote(data.id);
+}
 </script>
 
 <style scoped>

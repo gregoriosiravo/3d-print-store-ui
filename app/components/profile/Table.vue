@@ -13,11 +13,21 @@
                     <td>{{ item.stl_filename }}</td>
                     <td class="text-secondary">{{ type == 'quotes' ? '#QUOTE-' + item.id : '#ORDER-' + item.id }}</td>
                     <td>
-                        <span class="badge rounded-pill status-printing">{{ item.status }}</span>
+                        <span class="badge rounded-pill  text-uppercase"
+                            :class="item.status === 'pending' ? 'status-printing' : 'status-shipped'">{{ item.status
+                            }}</span>
                     </td>
                     <td class="text-end fw-semibold">{{ item.total_price }}</td>
-                    <td class="text-end">
-                        <i class="bi bi-three-dots-vertical action-dots"></i>
+                    <td class="text-end position-relative" v-if="item.status != 'accepted'">
+                        <i class="bi bi-three-dots-vertical action-dots" @click.stop="toggleMenu(item.id)"></i>
+                        <div v-if="openMenuId === item.id" class="action-menu">
+                            <button class="action-menu-item text-success btn btn-sm" @click="emit('accept', item)">
+                                <i class="bi bi-check-lg"></i> Accept
+                            </button>
+                            <button class="action-menu-item text-danger btn btn-sm" @click="emit('decline', item)">
+                                <i class="bi bi-x-lg"></i> Decline
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -33,6 +43,22 @@ const props = defineProps<{
     type: string
     columns: string[]
     items: Record<string, any>[]
+}>()
+const openMenuId = ref<string | null>(null)
+
+const toggleMenu = (id: string) => {
+    openMenuId.value = openMenuId.value === id ? null : id
+}
+
+onMounted(() => {
+    document.addEventListener('click', () => { openMenuId.value = null })
+})
+onUnmounted(() => {
+    document.removeEventListener('click', () => { openMenuId.value = null })
+})
+const emit = defineEmits<{
+    accept: [item: Record<string, any>]
+    decline: [item: Record<string, any>]
 }>()
 </script>
 

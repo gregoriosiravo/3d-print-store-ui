@@ -88,5 +88,41 @@ export const useQuoteStore = defineStore("quote", {
         this.loading = false;
       }
     },
+    async rejectQuote(quoteId: string) {
+      try {
+        const response = await $fetch(
+          `${useRuntimeConfig().public.API_BASE_URL}/quote/${quoteId}/reject`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+          },
+        );
+        console.log("Quote rejected successfully:", response);
+        this.fetchUserQuotes();
+      } catch (error) {
+        console.error("Error rejecting quote:", error);
+      }
+    },
+    async approveQuote(quoteId: string, totalPrice: number) {
+      try {
+        const response = await $fetch(
+          `${useRuntimeConfig().public.API_BASE_URL}/quote/${quoteId}/approve`,
+          {
+            method: "POST",
+            body: { totalPrice },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+          },
+        );
+        console.log("Quote approved successfully:", response);
+        this.fetchUserQuotes();
+      } catch (error) {
+        console.error("Error approving quote:", error);
+      }
+    },
   },
 });
