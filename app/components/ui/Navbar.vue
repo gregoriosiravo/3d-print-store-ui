@@ -92,9 +92,9 @@
 
 <script setup lang="ts">
 const searchQuery = ref<string>('')
+const store = useUserStore()
 
 const isAuthenticated = computed(() => {
-    const store = useUserStore()
     return store.isAuthenticated
 })
 const handleSearch = (): void => {

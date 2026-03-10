@@ -59,7 +59,11 @@ export const useUserStore = defineStore("user", {
         console.log("Login successful");
         this.isAuthenticated = true;
         if (response.token) {
-          useCookie("auth_token").value = response.token;
+          useCookie("auth_token", {
+            maxAge: 60 * 60 * 24 * 3,
+            secure: true,
+            sameSite: "strict",
+          }).value = response.token;
         }
         await navigateTo("/");
       } catch (err) {
@@ -105,6 +109,13 @@ export const useUserStore = defineStore("user", {
           },
         );
         this.isAuthenticated = true;
+        if (response.token) {
+          useCookie("auth_token", {
+            maxAge: 60 * 60 * 24 * 3,
+            secure: true,
+            sameSite: "strict",
+          }).value = response.token;
+        }
         console.log("Register and Login successful, user:", this.user);
         await navigateTo("/"); //TODO: dinamically navigate to the last page visited or to the profile page
       } catch (err) {
@@ -124,11 +135,13 @@ export const useUserStore = defineStore("user", {
           },
         );
         const userData = await response.json();
+
         console.log("Fetched user data:", userData);
         this.user = {
           ...userData,
           createdAt: new Date(userData.createdAt),
         };
+        this.isAuthenticated = true;
       } catch (err) {
         console.error("Fetch user failed:", err);
       }

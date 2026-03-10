@@ -1,6 +1,6 @@
 <template>
-    <UiContainer v-if="isAuthenticated && user">
-        <ProfileHeader :user="user"></ProfileHeader>
+    <UiContainer>
+        <ProfileHeader :user="user!"></ProfileHeader>
         <!-- Left Column -->
         <div class="row mb-3">
             <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)">
@@ -74,7 +74,8 @@ import Table from '~/components/profile/Table.vue';
 
 
 definePageMeta({
-    layout: "landing"
+    layout: "landing",
+    middleware: ["auth"]
 })
 const userStore = useUserStore();
 
