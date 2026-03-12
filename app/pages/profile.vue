@@ -9,7 +9,7 @@
                 </Table>
                 <br>
                 <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="orders"
-                    type="orders">
+                    type="orders" @accept="handlePay" @decline="handleDelete">
                 </Table>
             </div>
             <!-- Right Column -->
@@ -107,6 +107,17 @@ const handleDecline = (data: any) => {
     console.log("Declining quote:", data)
     quoteStore.rejectQuote(data.id);
 }
+
+const handlePay = (data: any) => {
+    console.log("Paying order:", data)
+    navigateTo(`/checkout/${data.id}`)
+}
+
+const handleDelete = (data: any) => {
+    console.log("Deleting order:", data)
+    //orderStore.deleteOrder(data.id);
+}
+
 </script>
 
 <style scoped>

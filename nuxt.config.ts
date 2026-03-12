@@ -63,6 +63,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       API_BASE_URL: process.env.API_BASE_URL || "http://localhost:4000/api",
+      STRIPE_PUBLIC_KEY:
+        process.env.NUXT_PUBLIC_STRIPE_KEY ||
+        "pk_test_51T9YJzPJgrcpCqXnwmv5cYnvV4iLWF1gp2638L0Ooj3st6EpMPZAQSR6keEdXqd6Zmu9xz8ftv9GsWtgkbEWd6pu003On3d4wk",
     },
   },
   modules: ["@pinia/nuxt"],

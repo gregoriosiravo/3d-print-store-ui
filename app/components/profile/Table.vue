@@ -12,7 +12,7 @@
                 <tr v-for="item in items">
                     <td>{{ item.stl_filename }}</td>
                     <td class="text-secondary">{{ type == 'quotes' ? '#QUO-' + item.id : '#' + item.order_number
-                    }}</td>
+                        }}</td>
                     <td>
                         <span class="badge rounded-pill  text-uppercase"
                             :class="item.status === 'pending' ? 'status-printing' : 'status-shipped'">{{ item.status
