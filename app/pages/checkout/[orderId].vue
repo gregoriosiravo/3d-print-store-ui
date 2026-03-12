@@ -19,7 +19,7 @@
             <div style="font-size: 4rem">🎉</div>
             <h2>Payment succeeded!</h2>
             <p class="text-muted">Thanks for your order — the printer is already working for you!</p>
-            <NuxtLink to="/orders" class="btn btn-primary mt-3">View your orders</NuxtLink>
+            <NuxtLink to="/profile" class="btn btn-primary mt-3">View your orders</NuxtLink>
         </div>
     </UiContainer>
 </template>

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import type { Quote, QuotePricing } from "~/types/quote";
 import { useUserStore } from "./users";
+import { useOrderStore } from "./orders";
 
 export const useQuoteStore = defineStore("quote", {
   state: () => ({
@@ -120,6 +121,7 @@ export const useQuoteStore = defineStore("quote", {
         );
         console.log("Quote approved successfully:", response);
         this.fetchUserQuotes();
+        useOrderStore().fetchUserOrders();
       } catch (error) {
         console.error("Error approving quote:", error);
       }
