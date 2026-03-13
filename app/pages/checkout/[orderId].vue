@@ -2,7 +2,7 @@
     <UiContainer>
         <div v-if="!paymentSuccess" class="row align-items-start">
             <div class="col-md-5">
-                <AddressForm ref="addressForm" />
+                <AddressForm ref="addressForm" :addressPrecompiled="addressPrecompiled" :isCheckout="true" />
             </div>
             <div class="col-md-7">
                 <div id="payment-element" class="form-control custom-width"></div>
@@ -30,6 +30,7 @@ import AddressForm from '~/components/AddressForm.vue'
 
 definePageMeta({ layout: "landing", middleware: ["auth"] })
 
+
 const config = useRuntimeConfig()
 const route = useRoute()
 const orderId = route.params.orderId as string
@@ -42,7 +43,12 @@ const elements = ref<any>(null)
 const loading = ref(false)
 const error = ref('')
 const paymentSuccess = ref(false)
+const addressStore = useAddressStore();
 
+const addressPrecompiled = computed(() => {
+    const addresses = addressStore.getUserAddresses
+    return addresses.length > 0 ? addresses[0] : null
+})
 onMounted(async () => {
     try {
         const data = await $fetch<{ clientSecret: string }>(
@@ -58,6 +64,12 @@ onMounted(async () => {
         elements.value.create('payment').mount('#payment-element')
     } catch (err) {
         console.error('Checkout init failed:', err)
+    }
+    try {
+        await addressStore.fetchUserAddresses(userStore.userId)
+        console.log("Fetched user addresses:", addressStore.getUserAddresses)
+    } catch (error) {
+        console.error('Failed to fetch address details:', error)
     }
 })
 
@@ -78,7 +90,6 @@ const handlePay = async () => {
         return
     }
 
-    // 2. Confirm payment with Stripe
     const { error: stripeError, paymentIntent } = await stripe.value.confirmPayment({
         elements: elements.value,
         confirmParams: {
