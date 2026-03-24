@@ -54,5 +54,28 @@ export const useAddressStore = defineStore("address", {
         this.loading = false;
       }
     },
+    async editAddress(userId: string, addressId: string, addressData: any) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await $fetch(
+          `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/edit/${addressId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${useCookie("auth_token").value}`,
+            },
+            body: addressData,
+          },
+        );
+        console.log("Address edited successfully:", response);
+        await this.fetchUserAddresses(userId);
+      } catch (err) {
+        console.error("Failed to edit address:", err);
+        this.error = "Failed to edit address. Please try again.";
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 });

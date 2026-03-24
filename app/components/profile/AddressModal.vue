@@ -11,7 +11,7 @@
                     <button type="button" class="btn-close" @click="$emit('close')"></button>
                 </div>
                 <div class="modal-body ">
-                    <AddressForm ref="addressForm" />
+                    <AddressForm ref="addressForm" :addressPrecompiled="props.addressPrecompiled" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @click="$emit('close')">Close</button>
@@ -25,9 +25,10 @@
 
 <script setup lang="ts">
 import AddressForm from '../AddressForm.vue'
-
+const props = defineProps<{
+    addressPrecompiled?: Record<string, any> | null
+}>()
 const emit = defineEmits(['close', 'save'])
-
 const addressForm = ref<InstanceType<typeof AddressForm> | null>(null)
 const saveAddress = () => {
     emit('save', addressForm.value?.form)

@@ -1,9 +1,9 @@
 <template>
     <UiContainer>
-        <AddressModal v-if="openAddressModal" @close="openAddressModal = false" @save="handleSaveAddress">
+        <AddressModal v-if="openAddressModal" @close="openAddressModal = false" @save="handleSaveAddress"
+            :addressPrecompiled="addressPrecompiled">
         </AddressModal>
         <ProfileHeader :user="user!"></ProfileHeader>
-        <!-- Left Column -->
         <div class="row mb-3">
             <div class="col-md-9">
                 <Table :columns="['Item', 'Quote Id', 'Status', 'Amount', '']" tableName="Quotes History (7 days max)"
@@ -14,7 +14,6 @@
                     type="orders" @accept="handlePay" @decline="handleDelete">
                 </Table>
             </div>
-            <!-- Right Column -->
             <div class="col-md-3">
                 <section id="shipping">
                     <Address :addresses="addresses" @edit="handleEditAddress" @delete="handleDeleteAddress"
@@ -57,6 +56,11 @@ const user = computed(() => userStore.user);
 const quotes = computed(() => quoteStore.getUserQuotes)
 const orders = computed(() => orderStore.getUserOrders)
 const addresses = computed(() => addressStore.getUserAddresses)
+const addressId = ref<string | null>(null)
+const addressPrecompiled = computed(() => {
+    if (!addressId.value) return null
+    return addressStore.getUserAddresses.find((addr: Record<string, any>) => addr.id === addressId.value) ?? null
+})
 
 // Handlers for quote and order actions
 const handleAccept = (data: any) => {
@@ -81,19 +85,22 @@ const handleDelete = (data: any) => {
 
 const handleEditAddress = (data: string) => {
     console.log("Editing address", data)
+    addressId.value = data
+    openAddressModal.value = !openAddressModal.value;
 }
 const handleDeleteAddress = (data: string) => {
     console.log("Deleting address")
 }
 const handleOpenAddressModal = () => {
     console.log("Adding new address")
+    addressId.value = null
     openAddressModal.value = !openAddressModal.value;
     console.log("Open address modal:", openAddressModal.value)
 }
 const handleSaveAddress = async (addressForm: InstanceType<typeof AddressForm> | null) => {
-    console.log("Saving address")
-    console.log("Address form data:", addressForm)
-    await addressStore.addAddress(user.value?.id, addressForm)
+    console.log("Address ID:", addressId.value)
+    if (!addressId.value) await addressStore.addAddress(user.value?.id, addressForm)
+    else await addressStore.editAddress(user.value?.id, addressId.value, addressForm)
     openAddressModal.value = false;
 
 }
