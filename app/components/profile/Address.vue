@@ -24,9 +24,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    (event: 'edit'): void
-    (event: 'delete'): void
-    (event: 'new'): void
+    edit: [data: string]
+    delete: [addressId: string]
+    new: [openModal: boolean]
 }>()
 
 function handleEdit(addressId: string) {

@@ -21,6 +21,7 @@
                     </Address>
                 </section>
                 <section id="payment-info">
+
                 </section>
             </div>
         </div>
@@ -32,6 +33,7 @@
 import Table from '~/components/profile/Table.vue';
 import Address from '~/components/profile/Address.vue';
 import AddressModal from '~/components/profile/AddressModal.vue';
+import type { AddressForm } from '~/types/address'
 
 definePageMeta({
     layout: "landing",
@@ -42,7 +44,7 @@ onMounted(async () => {
     console.log("Fetched user quotes:", quoteStore.getUserQuotes)
     await orderStore.fetchUserOrders()
     console.log("Fetched user orders:", orderStore.getUserOrders)
-    await addressStore.fetchUserAddresses(userStore.userId)
+    await addressStore.fetchUserAddresses(userStore.userId ?? '')
     console.log("Fetched user addresses:", addressStore.getUserAddresses)
 })
 const userStore = useUserStore();
@@ -97,8 +99,9 @@ const handleOpenAddressModal = () => {
     openAddressModal.value = !openAddressModal.value;
     console.log("Open address modal:", openAddressModal.value)
 }
-const handleSaveAddress = async (addressForm: InstanceType<typeof AddressForm> | null) => {
+const handleSaveAddress = async (addressForm: AddressForm | null) => {
     console.log("Address ID:", addressId.value)
+    if (!user.value) return;
     if (!addressId.value) await addressStore.addAddress(user.value?.id, addressForm)
     else await addressStore.editAddress(user.value?.id, addressId.value, addressForm)
     openAddressModal.value = false;
