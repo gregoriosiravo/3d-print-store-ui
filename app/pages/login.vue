@@ -53,6 +53,9 @@
 
             </div>
         </div>
+        <Modal v-if="openModal" title="Error"
+            message="There was an error processing your request. Please try again later." @close="openModal = false">
+        </Modal>
     </UiContainer>
 </template>
 
@@ -95,33 +98,36 @@ const user = reactive({
 })
 const title = computed(() => (isLogin.value ? 'Welcome Back!' : 'Create Account!'));
 const isLogin = ref(true);
+const openModal = ref(false);
 
 const handleLogin = async () => {
-    // basic validation logic
     if (!user.email || !user.password) {
-        validationErrors.email.value = !user.email ? 'Email is required' : '';
-        validationErrors.email.error = !user.email;
-        validationErrors.password.value = !user.password ? 'Password is required' : '';
-        validationErrors.password.error = !user.password;
-        return;
+        validationErrors.email.value = !user.email ? 'Email is required' : ''
+        validationErrors.email.error = !user.email
+        validationErrors.password.value = !user.password ? 'Password is required' : ''
+        validationErrors.password.error = !user.password
+        return
     }
+
     try {
-        await store.login(user.email, user.password);
-        await store.fetchUser()
-        const userId = store.userId;
+        await store.login(user.email, user.password)
+
+        const userId = store.userId
         const action = route.query.action
         const quoteId = route.query.quoteId
+
         if (action === 'save-quote' && quoteId && userId) {
             await quoteStore.associateQuoteWithUser(userId, quoteId as string)
         }
+        await store.fetchUser()
 
         const redirectPath = (route.query.redirect as string) || '/profile'
         await navigateTo(redirectPath)
     } catch (error) {
-        validationErrors.password.value = 'Invalid email or password';
-        validationErrors.password.error = true;
+        validationErrors.password.value = 'Invalid email or password'
+        validationErrors.password.error = true
+        openModal.value = true
     }
-
 }
 
 const switchToRegister = () => {
@@ -146,9 +152,18 @@ const handleRegister = async () => {
         validationErrors.password.error = true;
         return;
     }
-    await store.registerUser(user.firstName, user.lastName, user.email, user.password);
-    await store.fetchUser()
-
+    try {
+        await store.registerUser(user.firstName, user.lastName, user.email, user.password);
+    } catch (error) {
+        console.error('Failed to register user:', error);
+    }
+    try {
+        await store.fetchUser()
+        const redirectPath = (route.query.redirect as string) || '/profile'
+        await navigateTo(redirectPath)
+    } catch (error) {
+        console.error('Failed to fetch user data after registration:', error);
+    }
     const action = route.query.action
     const quoteId = route.query.quoteId
 

@@ -55,7 +55,6 @@ export const useUserStore = defineStore("user", {
             body: JSON.stringify({ email, password }),
           },
         );
-
         console.log("Login successful");
         this.isAuthenticated = true;
         if (response.token) {
@@ -68,7 +67,8 @@ export const useUserStore = defineStore("user", {
         await navigateTo("/");
       } catch (err) {
         console.error(err);
-        this.error = "Login failed. Please try again.";
+        console.log("Login failed");
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -120,6 +120,7 @@ export const useUserStore = defineStore("user", {
         await navigateTo("/"); //TODO: dinamically navigate to the last page visited or to the profile page
       } catch (err) {
         console.error("Navigation to register failed:", err);
+        throw err;
       }
     },
     async fetchUser() {
