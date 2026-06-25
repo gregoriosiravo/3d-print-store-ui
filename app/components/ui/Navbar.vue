@@ -20,7 +20,7 @@
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                         <li class="nav-item">
-                            <NuxtLink to="/marketplace" class="nav-link text-secondary-light" activeClass="text-white"
+                            <NuxtLink to="/coming-soon" class="nav-link text-secondary-light" activeClass="text-white"
                                 aria-label="Browse 3D models marketplace">
                                 Marketplace
                             </NuxtLink>

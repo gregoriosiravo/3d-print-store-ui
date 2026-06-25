@@ -1,6 +1,6 @@
 <template>
 
-    <section aria-labelledby="hero-title" class="mb-4 mb-lg-5">
+    <section v-once aria-labelledby="hero-title" class="mb-4 mb-lg-5">
         <div class="row align-items-center gy-3">
             <div class="col-lg-8">
                 <h1 id="hero-title" class="display-5 display-lg-4 fw-bold text-white mb-3">

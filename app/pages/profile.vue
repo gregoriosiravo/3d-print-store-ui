@@ -21,7 +21,8 @@
                     </Address>
                 </section>
                 <section id="payment-info">
-
+                    <PaymentMethod>
+                    </PaymentMethod>
                 </section>
             </div>
         </div>
@@ -33,11 +34,13 @@
 import Table from '~/components/profile/Table.vue';
 import Address from '~/components/profile/Address.vue';
 import AddressModal from '~/components/profile/AddressModal.vue';
+import PaymentMethod from '~/components/profile/PaymentMethod.vue';
 import type { AddressForm } from '~/types/address'
 
 definePageMeta({
     layout: "landing",
-    middleware: ["auth"]
+    middleware: ["auth"],
+    ssr: false
 })
 onMounted(async () => {
     await quoteStore.fetchUserQuotes()

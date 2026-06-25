@@ -28,7 +28,7 @@
 import { loadStripe } from '@stripe/stripe-js'
 import AddressForm from '~/components/AddressForm.vue'
 
-definePageMeta({ layout: "landing", middleware: ["auth"] })
+definePageMeta({ layout: "landing", middleware: ["auth"], ssr: false })
 
 
 const config = useRuntimeConfig()
