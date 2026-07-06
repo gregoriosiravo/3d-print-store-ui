@@ -77,15 +77,8 @@ const props = defineProps<{
     estimatedPrintTimeMinutes: number | null
 }>()
 
-
-const deliveryDate = computed(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 3);
-    const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    date.setDate(date.getDate() + 6);
-    const formattedLong = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return formatted + ' - ' + formattedLong;
-})
+const { range } = useDeliveryEstimate()
+const deliveryDate = computed(() => range(3, 9).formatted)
 
 const formattedTotalPrice = computed(() =>
     props.pricing?.totalPrice?.toFixed(2) ?? '0.00'

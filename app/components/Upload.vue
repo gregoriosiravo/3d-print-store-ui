@@ -30,53 +30,29 @@
 
 <script setup lang="ts">
 const fileInput = ref<HTMLInputElement | null>(null)
-const isDragging = ref(false)
-const fileName = ref('')
-
+const { isDragging, fileName, error, processFile } = useFileUpload()
 const emit = defineEmits<{
     fileSelected: [file: File]
 }>()
 
 const handleUploadClick = () => {
-    console.log('Upload area clicked')
     fileInput.value?.click()
 }
 
 const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement
     const file = target.files?.[0]
-
-    if (file) {
-        processFile(file)
+    if (file && processFile(file)) {
+        emit('fileSelected', file)
     }
 }
 
 const handleDrop = (event: DragEvent) => {
     isDragging.value = false
     const file = event.dataTransfer?.files?.[0]
-
-    if (file) {
-        processFile(file)
+    if (file && processFile(file)) {
+        emit('fileSelected', file)
     }
-}
-
-const processFile = (file: File) => {
-    const validTypes = ['.stl', '.obj', '.step']
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
-
-    if (!validTypes.includes(fileExtension)) {
-        alert('Please upload a valid file (.stl, .obj, or .step)')
-        return
-    }
-
-    const maxSize = 100 * 1024 * 1024
-    if (file.size > maxSize) {
-        alert('File size must be less than 100MB')
-        return
-    }
-
-    fileName.value = file.name
-    emit('fileSelected', file)
 }
 </script>
 

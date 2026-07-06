@@ -43,7 +43,6 @@
 
 <script setup lang="ts">
 import LiveRender from '~/components/LiveRender.vue'
-import { storeToRefs } from 'pinia'
 
 definePageMeta({
     layout: "landing",
@@ -52,97 +51,18 @@ definePageMeta({
 
 const LazyQuoteSummary = defineLazyHydrationComponent('visible', () => import('~/components/QuoteSummary.vue'))
 
-const quoteStore = useQuoteStore()
-const userStore = useUserStore()
-const router = useRouter()
-
-const { quote, pricing, materialWeightGrams, estimatedPrintTimeMinutes } = storeToRefs(quoteStore)
-const formData = reactive({
-    stl: null as File | null,
-    materialId: null as number | null,
-    printConfigId: null as number | null
-})
-const isAuthenticated = computed(() => {
-    return userStore.isAuthenticated;
-})
-const uploadedFile = ref<File | null>(null)
-
-const handleFileSelected = (file: File) => {
-    uploadedFile.value = file
-    formData.stl = file
-}
-const handleMaterialSelected = (material: any) => {
-    formData.materialId = material.id;
-}
-const handleProfileSelected = (profile: any) => {
-    let profileId: number | null = checkPrintProfile(profile);
-    formData.printConfigId = profileId;
-}
-const checkPrintProfile = (profile: any): number | null => {
-    const infill = typeof profile.infillDensity === 'string'
-        ? parseInt(profile.infillDensity)
-        : profile.infillDensity
-    if (profile.layerHeight === '0.3mm' && infill === 15) return 1
-    if (profile.layerHeight === '0.2mm' && infill === 25) return 2
-    if (profile.layerHeight === '0.1mm' && infill === 25) return 3
-    if (profile.layerHeight === '0.2mm' && infill === 50) return 4
-    return 2 // Default to Standard Quality if no match
-}
-const isRequestInProgress = ref(false)
-watch(
-    formData,
-    async (newFormData) => {
-        if (newFormData.stl) {
-            if (!newFormData.materialId) newFormData.materialId = 1
-            if (!newFormData.printConfigId) newFormData.printConfigId = 2
-        }
-        if (newFormData.stl && newFormData.materialId && newFormData.printConfigId) {
-            console.log('Calculating quote with form data:', newFormData)
-            if (isRequestInProgress.value) {
-                console.log('Request already in progress, skipping...')
-                return
-            }
-            isRequestInProgress.value = true
-            try {
-                const payload = new FormData()
-                payload.append('stl', newFormData.stl)
-                payload.append('materialId', newFormData.materialId.toString())
-                payload.append('printConfigId', newFormData.printConfigId.toString())
-
-                await quoteStore.createQuote(payload)
-
-            } catch (error) {
-                console.error('Error creating quote:', error)
-            } finally {
-                isRequestInProgress.value = false
-            }
-        }
-    },
-    { deep: true }
-)
-const handleSaveQuote = () => {
-    if (isAuthenticated.value && quoteStore.quoteId && userStore.userId) {
-        quoteStore.associateQuoteWithUser(userStore.userId, quoteStore.quoteId)
-        alert('Quote saved successfully!')
-    } else {
-        navigateTo({
-            path: '/login',
-            query: {
-                action: 'save-quote',
-                quoteId: quoteStore.quoteId
-            }
-        })
-    }
-}
-
-const handleOrderNow = () => {
-    if (isAuthenticated.value) {
-        alert('Proceeding to checkout!')
-    } else {
-        router.push('/login')
-        alert('Please log in to proceed to checkout.')
-    }
-}
+const {
+    uploadedFile,
+    quote,
+    pricing,
+    materialWeightGrams,
+    estimatedPrintTimeMinutes,
+    handleFileSelected,
+    handleMaterialSelected,
+    handleProfileSelected,
+    saveQuote: handleSaveQuote,
+    orderNow: handleOrderNow,
+} = useQuoteCalculator()
 
 // SEO Meta Tags
 useHead({

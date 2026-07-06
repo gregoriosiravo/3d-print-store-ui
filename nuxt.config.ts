@@ -15,7 +15,6 @@ export default defineNuxtConfig({
           content:
             "3D printing, instant quote, STL, manufacturing, prototyping",
         },
-        // Open Graph / Facebook
         { property: "og:type", content: "website" },
         {
           property: "og:title",
@@ -25,7 +24,6 @@ export default defineNuxtConfig({
           property: "og:description",
           content: "Precision industrial-grade 3D printing services",
         },
-        // Twitter
         { name: "twitter:card", content: "summary_large_image" },
         {
           name: "twitter:title",
@@ -33,7 +31,6 @@ export default defineNuxtConfig({
         },
       ],
       link: [
-        // Bootstrap CSS
         {
           rel: "stylesheet",
           href: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css",
@@ -43,7 +40,6 @@ export default defineNuxtConfig({
         },
       ],
       script: [
-        // Bootstrap Bundle JS (includes Popper)
         {
           src: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
           integrity:
@@ -60,6 +56,26 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
   },
+
+  routeRules: {
+    '/': { prerender: true, swr: 3600 },
+    '/login': { ssr: true },
+    '/profile': { ssr: false },
+    '/checkout/**': { ssr: false },
+    '/verify-email': { ssr: false },
+    '/prints': { ssr: false },
+    '/coming-soon': { prerender: true },
+    '/marketplace': { prerender: true },
+    '/materials': { prerender: true },
+    '/services': { prerender: true },
+    '/item-list/**': { prerender: true },
+  },
+
+  experimental: {
+    typedPages: true,
+    payloadExtraction: true,
+  },
+
   runtimeConfig: {
     public: {
       API_BASE_URL: process.env.API_BASE_URL || "http://localhost:4000/api",

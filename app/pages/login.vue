@@ -7,33 +7,28 @@
                     <div class="mb-3" v-if="!isLogin">
                         <label for="firstName" class="form-label text-white">First name</label>
                         <input type="text" class="form-control" id="firstName" v-model="user.firstName">
-                        <div class="text-danger small mt-1" v-if="validationErrors.firstName.error">{{
-                            validationErrors.firstName.value }}</div>
+                        <div class="text-danger small mt-1" v-if="errors.firstName">{{ errors.firstName }}</div>
                     </div>
                     <div class="mb-3" v-if="!isLogin">
                         <label for="lastName" class="form-label text-white">Last name</label>
                         <input type="text" class="form-control" id="lastName" v-model="user.lastName">
-                        <div class="text-danger small mt-1" v-if="validationErrors.lastName.error">{{
-                            validationErrors.lastName.value }}</div>
+                        <div class="text-danger small mt-1" v-if="errors.lastName">{{ errors.lastName }}</div>
                     </div>
                     <div class="mb-3">
                         <label for="emailAddress" class="form-label text-white">Email address</label>
                         <input type="email" class="form-control" id="emailAddress" aria-describedby="emailHelp"
                             v-model="user.email">
-                        <div class="text-danger small mt-1" v-if="validationErrors.email.error">{{
-                            validationErrors.email.value }}</div>
+                        <div class="text-danger small mt-1" v-if="errors.email">{{ errors.email }}</div>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label text-white">Password</label>
                         <input type="password" class="form-control" id="password" v-model="user.password">
-                        <div class="text-danger small mt-1" v-if="validationErrors.password.error">{{
-                            validationErrors.password.value }}</div>
+                        <div class="text-danger small mt-1" v-if="errors.password">{{ errors.password }}</div>
                     </div>
                     <div class="mb-3" v-if="!isLogin">
                         <label for="confirmPassword" class="form-label text-white">Confirm Password</label>
                         <input type="password" class="form-control" id="confirmPassword" v-model="user.confirmPassword">
-                        <div class="text-danger small mt-1" v-if="validationErrors.confirmPassword.error">{{
-                            validationErrors.confirmPassword.value }}</div>
+                        <div class="text-danger small mt-1" v-if="errors.confirmPassword">{{ errors.confirmPassword }}</div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="rememberMe">
@@ -62,32 +57,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 const route = useRoute()
-const store = useUserStore()
 const quoteStore = useQuoteStore()
+const { login, register, userId, fetchUser } = useAuth()
+const { errors, validate, clearErrors } = useFormValidation()
 definePageMeta({
     layout: "landing"
-})
-const validationErrors = reactive({
-    email: {
-        value: '',
-        error: false
-    },
-    password: {
-        value: '',
-        error: false
-    },
-    firstName: {
-        value: '',
-        error: false
-    },
-    lastName: {
-        value: '',
-        error: false
-    },
-    confirmPassword: {
-        value: '',
-        error: false
-    }
 })
 const user = reactive({
     email: '',
@@ -101,78 +75,63 @@ const isLogin = ref(true);
 const openModal = ref(false);
 
 const handleLogin = async () => {
-    if (!user.email || !user.password) {
-        validationErrors.email.value = !user.email ? 'Email is required' : ''
-        validationErrors.email.error = !user.email
-        validationErrors.password.value = !user.password ? 'Password is required' : ''
-        validationErrors.password.error = !user.password
-        return
-    }
+    clearErrors()
+    const valid = validate({
+        email: { value: user.email, rules: [{ type: 'required' }] },
+        password: { value: user.password, rules: [{ type: 'required' }] },
+    })
+    if (!valid) return
 
     try {
-        await store.login(user.email, user.password)
+        await login(user.email, user.password)
 
-        const userId = store.userId
         const action = route.query.action
         const quoteId = route.query.quoteId
 
-        if (action === 'save-quote' && quoteId && userId) {
-            await quoteStore.associateQuoteWithUser(userId, quoteId as string)
+        if (action === 'save-quote' && quoteId && userId.value) {
+            await quoteStore.associateQuoteWithUser(userId.value, quoteId as string)
         }
-        await store.fetchUser()
+        await fetchUser()
 
         const redirectPath = (route.query.redirect as string) || '/profile'
         await navigateTo(redirectPath)
     } catch (error) {
-        validationErrors.password.value = 'Invalid email or password'
-        validationErrors.password.error = true
+        errors.password = 'Invalid email or password'
         openModal.value = true
     }
 }
 
 const switchToRegister = () => {
+    clearErrors()
     isLogin.value = false;
 }
 const handleRegister = async () => {
     if (isLogin.value) return;
-    console.log('Registering user:', user.firstName, user.lastName, user.email);
-    if (!user.firstName || !user.lastName || !user.email || !user.password) {
-        validationErrors.firstName.value = !user.firstName ? 'First name is required' : '';
-        validationErrors.firstName.error = !user.firstName;
-        validationErrors.lastName.value = !user.lastName ? 'Last name is required' : '';
-        validationErrors.lastName.error = !user.lastName;
-        validationErrors.email.value = !user.email ? 'Email is required' : '';
-        validationErrors.email.error = !user.email;
-        validationErrors.password.value = !user.password ? 'Password is required' : '';
-        validationErrors.password.error = !user.password;
-        return;
-    }
-    if (user.password.length < 6 || user.password != user.confirmPassword) {
-        validationErrors.password.value = 'Password must be at least 6 characters and match confirmation';
-        validationErrors.password.error = true;
-        return;
-    }
+    clearErrors()
+    const valid = validate({
+        firstName: { value: user.firstName, rules: [{ type: 'required' }] },
+        lastName: { value: user.lastName, rules: [{ type: 'required' }] },
+        email: { value: user.email, rules: [{ type: 'required' }] },
+        password: { value: user.password, rules: [{ type: 'required' }, { type: 'minLength', value: 6 }] },
+        confirmPassword: { value: user.confirmPassword, rules: [{ type: 'required' }, { type: 'match', value: user.password, message: 'Passwords do not match' }] },
+    })
+    if (!valid) return
+
     try {
-        await store.registerUser(user.firstName, user.lastName, user.email, user.password);
-    } catch (error) {
-        console.error('Failed to register user:', error);
-    }
-    try {
-        await store.fetchUser()
+        await register(user.firstName, user.lastName, user.email, user.password)
+        await fetchUser()
+        const action = route.query.action
+        const quoteId = route.query.quoteId
+
+        if (action === 'save-quote' && quoteId) {
+            await quoteStore.associateQuoteWithUser(userId.value ?? "", quoteId as string)
+        }
+
         const redirectPath = (route.query.redirect as string) || '/profile'
         await navigateTo(redirectPath)
     } catch (error) {
-        console.error('Failed to fetch user data after registration:', error);
+        console.error('Registration failed:', error)
     }
-    const action = route.query.action
-    const quoteId = route.query.quoteId
-
-    if (action === 'save-quote' && quoteId) {
-        await quoteStore.associateQuoteWithUser(store.userId ?? "", quoteId as string)
-    }
-
-    const redirectPath = (route.query.redirect as string) || '/profile'
-    await navigateTo(redirectPath)
 }
 </script>
 
