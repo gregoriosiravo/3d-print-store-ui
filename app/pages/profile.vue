@@ -40,7 +40,8 @@ import type { AddressForm } from '~/types/address'
 definePageMeta({
     layout: "landing",
     middleware: ["auth"],
-    ssr: false
+    ssr: false,
+    keepalive: true
 })
 onMounted(async () => {
     await quoteStore.fetchUserQuotes()

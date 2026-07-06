@@ -1,4 +1,3 @@
-<!-- layouts/default.vue -->
 <template>
     <UiNavbar />
 
@@ -6,10 +5,11 @@
         <slot />
     </main>
 
-    <UiFooter />
+    <LazyUiFooter />
 </template>
 
 <script setup lang="ts">
+const LazyUiFooter = defineLazyHydrationComponent('idle', () => import('~/components/ui/Footer.vue'))
 </script>
 
 <style scoped>

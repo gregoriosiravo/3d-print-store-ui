@@ -2,26 +2,24 @@
     <header class="navbar-dark bg-dark-blue border-bottom border-secondary">
         <nav class="navbar navbar-expand-lg container-fluid px-3 px-lg-4" aria-label="Main navigation">
             <div class="container-fluid">
-                <!-- Logo -->
-                <NuxtLink to="/" class="navbar-brand d-flex align-items-center gap-2" aria-label="PrintFlow 3D - Home">
+                <NuxtLink to="/" class="navbar-brand d-flex align-items-center gap-2"
+                    aria-label="PrintFlow 3D - Home">
                     <div class="logo-cube bg-primary" style="width: 32px; height: 32px; transform: rotate(45deg);"
                         aria-hidden="true"></div>
                     <span class="fs-5 fw-bold text-white">PrintFlow 3D</span>
                 </NuxtLink>
 
-                <!-- Mobile Toggle Button -->
                 <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false"
                     aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon custom-toggler"></span>
                 </button>
 
-                <!-- Navigation Menu -->
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                         <li class="nav-item">
-                            <NuxtLink to="/coming-soon" class="nav-link text-secondary-light" activeClass="text-white"
-                                aria-label="Browse 3D models marketplace">
+                            <NuxtLink to="/coming-soon" class="nav-link text-secondary-light"
+                                activeClass="text-white" aria-label="Browse 3D models marketplace">
                                 Marketplace
                             </NuxtLink>
                         </li>
@@ -45,10 +43,9 @@
                         </li>
                     </ul>
 
-                    <!-- Search and Profile Section -->
                     <div class="d-flex align-items-center gap-3">
-                        <!-- Search Form -->
-                        <form class="d-none d-md-block position-relative" role="search" @submit.prevent="handleSearch">
+                        <form class="d-none d-md-block position-relative" role="search"
+                            @submit.prevent="handleSearch">
                             <label for="searchInput" class="visually-hidden">Search 3D models</label>
                             <input id="searchInput" v-model="searchQuery"
                                 class="form-control form-control-sm border-0 ps-5" type="search"
@@ -62,13 +59,11 @@
                             </svg>
                         </form>
                         <div class="d-flex" v-if="isAuthenticated">
-                            <!-- Profile Button -->
                             <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
                                 aria-label="Go to profile page">
                                 Profile
                             </NuxtLink>
 
-                            <!-- User Avatar -->
                             <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
                                 <div class="rounded-circle bg-gradient"
                                     style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"
@@ -76,12 +71,10 @@
                             </NuxtLink>
                         </div>
                         <div v-else>
-                            <!-- Login Button -->
                             <NuxtLink to="/login" class="btn btn-outline-light btn-sm fw-semibold"
                                 aria-label="Log in to your account">
                                 Log In
                             </NuxtLink>
-
                         </div>
                     </div>
                 </div>
@@ -89,6 +82,8 @@
         </nav>
     </header>
 </template>
+
+
 
 <script setup lang="ts">
 const searchQuery = ref<string>('')

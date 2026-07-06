@@ -11,8 +11,8 @@
                 <div class="col-lg-4">
                     <LiveRender :file="uploadedFile" />
 
-                    <!-- Quote Summary -->
-                    <QuoteSummary :quote="quote" :pricing="pricing" :fileName="uploadedFile?.name || null"
+                    <!-- Quote Summary (lazy hydrated when visible) -->
+                    <LazyQuoteSummary :quote="quote" :pricing="pricing" :fileName="uploadedFile?.name || null"
                         :materialWeightGrams="materialWeightGrams"
                         :estimatedPrintTimeMinutes="estimatedPrintTimeMinutes" @save-quote="handleSaveQuote"
                         @order-now="handleOrderNow" />
@@ -46,8 +46,11 @@ import LiveRender from '~/components/LiveRender.vue'
 import { storeToRefs } from 'pinia'
 
 definePageMeta({
-    layout: "landing"
+    layout: "landing",
+    keepalive: true
 })
+
+const LazyQuoteSummary = defineLazyHydrationComponent('visible', () => import('~/components/QuoteSummary.vue'))
 
 const quoteStore = useQuoteStore()
 const userStore = useUserStore()
