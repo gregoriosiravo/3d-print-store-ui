@@ -48,7 +48,14 @@ function handleNewAddress(openModal: boolean) {
     max-width: 80%;
     text-align: center;
     margin-left: 18px;
-    padding: 4px;
+    padding: 3px;
+    margin-bottom: 10px;
+}
+
+.add-address-btn:hover {
+    border: 1px solid #fff;
+    background-color: #137fec;
+    color: white;
 }
 
 .default-address {

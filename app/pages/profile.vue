@@ -113,4 +113,8 @@ const handleSaveAddress = async (addressForm: AddressForm | null) => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+#shipping {
+    margin-bottom: 2rem;
+}
+</style>

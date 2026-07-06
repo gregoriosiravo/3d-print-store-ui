@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex mt-2">
         <h3 class="h5"><i class="bi bi-credit-card "></i> Payments</h3>
-        <p class="ps-4">ADD</p>
+        <button class="add-payment-btn btn" @click="handleNewPayment()">add</button>
     </div>
     <div class="credit-card">
         <!-- Chip -->
@@ -35,10 +35,32 @@
 </template>
 
 <script setup lang="ts">
+
+const handleNewPayment = () => {
+    // Logic to handle adding a new payment method
+    console.log('Add new payment method');
+}
+
 </script>
 
 <style scoped>
 /* Payment Section */
+.add-payment-btn {
+    font-size: small;
+    color: white;
+    max-width: 80%;
+    text-align: center;
+    margin-left: 18px;
+    padding: 3px 10px 3px 10px;
+    margin-bottom: 10px;
+}
+
+.add-payment-btn:hover {
+    border: 1px solid #fff;
+    background-color: #137fec;
+    color: white;
+}
+
 .credit-card {
     height: 220px;
     background: rgba(255, 255, 255, 0.08);
