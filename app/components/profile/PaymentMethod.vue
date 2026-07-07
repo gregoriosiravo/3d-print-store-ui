@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex mt-2">
         <h3 class="h5"><i class="bi bi-credit-card "></i> Payments</h3>
-        <button class="add-payment-btn btn" @click="handleNewPayment()">add</button>
+        <button class="add-payment-btn btn" @click="handleNewPayment(true)">add</button>
     </div>
     <div class="credit-card">
         <!-- Chip -->
@@ -36,9 +36,12 @@
 
 <script setup lang="ts">
 
-const handleNewPayment = () => {
-    // Logic to handle adding a new payment method
-    console.log('Add new payment method');
+const emit = defineEmits<{
+    new: [openModal: boolean]
+}>()
+
+function handleNewPayment(openModal: boolean) {
+    emit('new', openModal)
 }
 
 </script>

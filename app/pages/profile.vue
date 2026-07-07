@@ -3,6 +3,8 @@
         <AddressModal v-if="openAddressModal" @close="openAddressModal = false" @save="handleSaveAddress"
             :addressPrecompiled="addressPrecompiled">
         </AddressModal>
+        <PaymentModal v-if="openPaymentModal" @close="openPaymentModal = false" @save="handleSavePayment">
+        </PaymentModal>
         <ProfileHeader :user="user!"></ProfileHeader>
         <div class="row mb-3">
             <div class="col-md-9">
@@ -21,7 +23,7 @@
                     </Address>
                 </section>
                 <section id="payment-info">
-                    <PaymentMethod>
+                    <PaymentMethod @new="handleOpenPaymentModal">
                     </PaymentMethod>
                 </section>
             </div>
@@ -34,8 +36,10 @@
 import Table from '~/components/profile/Table.vue';
 import Address from '~/components/profile/Address.vue';
 import AddressModal from '~/components/profile/AddressModal.vue';
+import PaymentModal from '~/components/profile/PaymentModal.vue';
 import PaymentMethod from '~/components/profile/PaymentMethod.vue';
 import type { AddressForm } from '~/types/address'
+import type { PaymentMethodDto } from '~/types/payment'
 
 definePageMeta({
     layout: "landing",
@@ -50,13 +54,17 @@ onMounted(async () => {
     console.log("Fetched user orders:", orderStore.getUserOrders)
     await addressStore.fetchUserAddresses(userStore.userId ?? '')
     console.log("Fetched user addresses:", addressStore.getUserAddresses)
+    await paymentStore.fetchUserPayments(userStore.userId ?? '')
+    console.log("Fetched user payment methods:", paymentStore.getUserPayments)
 })
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
 const orderStore = useOrderStore();
 const addressStore = useAddressStore();
+const paymentStore = usePaymentStore();
 
 const openAddressModal = ref(false);
+const openPaymentModal = ref(false);
 
 const user = computed(() => userStore.user);
 const quotes = computed(() => quoteStore.getUserQuotes)
@@ -103,6 +111,13 @@ const handleOpenAddressModal = () => {
     openAddressModal.value = !openAddressModal.value;
     console.log("Open address modal:", openAddressModal.value)
 }
+
+const handleOpenPaymentModal = () => {
+    console.log("Adding new payment method")
+    openPaymentModal.value = !openPaymentModal.value;
+
+}
+
 const handleSaveAddress = async (addressForm: AddressForm | null) => {
     console.log("Address ID:", addressId.value)
     if (!user.value) return;
@@ -110,6 +125,10 @@ const handleSaveAddress = async (addressForm: AddressForm | null) => {
     else await addressStore.editAddress(user.value?.id, addressId.value, addressForm)
     openAddressModal.value = false;
 
+}
+
+const handleSavePayment = () => {
+    openPaymentModal.value = false
 }
 </script>
 
