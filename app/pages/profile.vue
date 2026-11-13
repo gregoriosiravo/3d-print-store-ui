@@ -94,6 +94,10 @@ const handlePay = (data: any) => {
 }
 
 const handleCancelOrder = async (data: any) => {
+    const question = data.payment_status === 'paid'
+        ? 'Cancel this order? The payment will be refunded.'
+        : 'Cancel this order?'
+    if (!confirm(question)) return
     await orderStore.cancelOrder(data.id)
     if (orderStore.error) alert(orderStore.error)
 }
