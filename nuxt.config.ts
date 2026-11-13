@@ -58,7 +58,8 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true, swr: 3600 },
+    // Cached for an hour in production only; in development it would serve stale HTML
+    '/': process.env.NODE_ENV === 'production' ? { prerender: true, swr: 3600 } : { prerender: true },
     '/login': { ssr: true },
     '/profile': { ssr: false },
     '/checkout/**': { ssr: false },
