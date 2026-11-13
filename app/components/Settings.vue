@@ -125,8 +125,8 @@ import { reactive, watch } from 'vue';
 
 const chosenPrintProfile = reactive({
 
-    layerHeight: '',
-    infillDensity: '',
+    layerHeight: '0.2mm',
+    infillDensity: '25',
     color: ''
 })
 
@@ -158,8 +158,8 @@ const handleInfillChange = (event: Event) => {
 
 const handleMaterialSelect = (value: string) => {
     if (value === 'pla') choosenMaterial.id = 1;
-    else if (value === 'abs') choosenMaterial.id = 2;
-    else if (value === 'petg-cf') choosenMaterial.id = 3;
+    else if (value === 'abs') choosenMaterial.id = 4;
+    else if (value === 'petg-cf') choosenMaterial.id = 5;
     choosenMaterial.material = value;
     console.log('Material selected:', value);
 }

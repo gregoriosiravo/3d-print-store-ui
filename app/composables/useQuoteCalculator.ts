@@ -7,7 +7,8 @@ export const useQuoteCalculator = () => {
   const formData = reactive({
     stl: null as File | null,
     materialId: null as number | null,
-    printConfigId: null as number | null,
+    layerHeight: null as number | null,
+    infillDensity: null as number | null,
   })
 
   const uploadedFile = ref<File | null>(null)
@@ -19,6 +20,9 @@ export const useQuoteCalculator = () => {
 
   const handleFileSelected = (file: File) => {
     uploadedFile.value = file
+    formData.materialId ??= 1
+    formData.layerHeight ??= 0.2
+    formData.infillDensity ??= 25
     formData.stl = file
   }
 
@@ -27,48 +31,45 @@ export const useQuoteCalculator = () => {
   }
 
   const handleProfileSelected = (profile: { layerHeight: string; infillDensity: string | number }) => {
-    formData.printConfigId = mapPrintProfile(profile)
+    formData.layerHeight = parseFloat(profile.layerHeight)
+    formData.infillDensity = parseInt(String(profile.infillDensity))
   }
 
-  const mapPrintProfile = (profile: { layerHeight: string; infillDensity: string | number }): number => {
-    const infill = typeof profile.infillDensity === 'string'
-      ? parseInt(profile.infillDensity)
-      : profile.infillDensity
+  // A change made while a request runs is queued and sent once it finishes, not dropped
+  let quotePending = false
 
-    if (profile.layerHeight === '0.3mm' && infill === 15) return 1
-    if (profile.layerHeight === '0.2mm' && infill === 25) return 2
-    if (profile.layerHeight === '0.1mm' && infill === 25) return 3
-    if (profile.layerHeight === '0.2mm' && infill === 50) return 4
+  const sendQuote = async () => {
+    const { stl, materialId, layerHeight, infillDensity } = formData
+    if (!stl || !materialId || !layerHeight || !infillDensity) return
 
-    return 2
+    if (isRequestInProgress.value) {
+      quotePending = true
+      return
+    }
+    isRequestInProgress.value = true
+
+    try {
+      const payload = new FormData()
+      payload.append('stl', stl)
+      payload.append('materialId', materialId.toString())
+      payload.append('layerHeight', layerHeight.toString())
+      payload.append('infillDensity', infillDensity.toString())
+
+      await quoteStore.createQuote(payload)
+    } catch (error) {
+      console.error('Error creating quote:', error)
+    } finally {
+      isRequestInProgress.value = false
+      if (quotePending) {
+        quotePending = false
+        sendQuote()
+      }
+    }
   }
 
   watch(
     formData,
-    async (next) => {
-      if (next.stl) {
-        if (!next.materialId) next.materialId = 1
-        if (!next.printConfigId) next.printConfigId = 2
-      }
-
-      if (next.stl && next.materialId && next.printConfigId) {
-        if (isRequestInProgress.value) return
-        isRequestInProgress.value = true
-
-        try {
-          const payload = new FormData()
-          payload.append('stl', next.stl)
-          payload.append('materialId', next.materialId.toString())
-          payload.append('printConfigId', next.printConfigId.toString())
-
-          await quoteStore.createQuote(payload)
-        } catch (error) {
-          console.error('Error creating quote:', error)
-        } finally {
-          isRequestInProgress.value = false
-        }
-      }
-    },
+    () => sendQuote(),
     { deep: true },
   )
 
