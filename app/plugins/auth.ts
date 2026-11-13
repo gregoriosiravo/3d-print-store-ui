@@ -1,12 +1,6 @@
 export default defineNuxtPlugin(async () => {
-  // The session cookie is only read in the browser; server-side fetches would
-  // target localhost:4000 from inside the UI container and fail.
+  // The session is an HttpOnly cookie, so the browser cannot read it; ask the API instead.
+  // Runs only in the browser: server-side requests would target localhost:4000 inside the UI container.
   if (import.meta.server) return;
-  const userStore = useUserStore();
-  const token = useCookie("auth_token");
-  if (token.value) {
-    userStore.isAuthenticated = true;
-    console.log("Token found, fetching user data...");
-    await userStore.fetchUser();
-  }
+  await useUserStore().fetchUser();
 });

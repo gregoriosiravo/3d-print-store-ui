@@ -47,11 +47,11 @@ export const useQuoteStore = defineStore("quote", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/quote/associate`,
         {
+          credentials: "include",
           method: "POST",
           body: { userId, quoteId },
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
           },
         },
       )
@@ -68,10 +68,8 @@ export const useQuoteStore = defineStore("quote", () => {
       const data = await $fetch<{ quotes: Quote[] }>(
         `${useRuntimeConfig().public.API_BASE_URL}/quotes`,
         {
+          credentials: "include",
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
       quotes.value = data.quotes
@@ -88,10 +86,8 @@ export const useQuoteStore = defineStore("quote", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/quote/${quoteId}/reject`,
         {
+          credentials: "include",
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
       await fetchUserQuotes()
@@ -106,10 +102,8 @@ export const useQuoteStore = defineStore("quote", () => {
       const order = await $fetch<{ orderId: string; orderNumber: string }>(
         `${useRuntimeConfig().public.API_BASE_URL}/quote/${quoteId}/approve`,
         {
+          credentials: "include",
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
       await fetchUserQuotes()

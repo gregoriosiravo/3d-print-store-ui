@@ -50,12 +50,17 @@ const addressPrecompiled = computed(() => {
     return addresses.length > 0 ? addresses[0] : null
 })
 onMounted(async () => {
+    // Back from a 3-D Secure redirect: Stripe puts the outcome in the URL
+    if (route.query.redirect_status === 'succeeded') {
+        paymentSuccess.value = true
+        return
+    }
     try {
         const data = await $fetch<{ clientSecret: string }>(
             `${config.public.API_BASE_URL}/orders/${orderId}/pay`,
             {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${useCookie('auth_token').value}` }
+              credentials: "include",
+              method: 'POST',
             }
         )
         clientSecret.value = data.clientSecret
@@ -80,8 +85,8 @@ const handlePay = async () => {
     console.log("Address form data:", addressForm.value?.form)
     try {
         await $fetch(`${config.public.API_BASE_URL}/orders/${orderId}/address`, {
+          credentials: "include",
             method: 'PATCH',
-            headers: { Authorization: `Bearer ${useCookie('auth_token').value}` },
             body: addressForm.value?.form
         })
     } catch (err) {
@@ -93,7 +98,7 @@ const handlePay = async () => {
     const { error: stripeError, paymentIntent } = await stripe.value.confirmPayment({
         elements: elements.value,
         confirmParams: {
-            return_url: `${window.location.origin}/profile`
+            return_url: `${window.location.origin}/checkout/${orderId}`
         },
         redirect: 'if_required'
     })

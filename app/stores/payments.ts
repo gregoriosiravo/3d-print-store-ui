@@ -8,16 +8,14 @@ export const usePaymentStore = defineStore("payment", () => {
 
   const getUserPayments = computed(() => payments.value ?? [])
 
-  async function fetchUserPayments(userId: string) {
+  async function fetchUserPayments() {
     loading.value = true
     error.value = null
     try {
       const response = await $fetch<any[]>(
         `${useRuntimeConfig().public.API_BASE_URL}/payment-methods`,
         {
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
+          credentials: "include",
         },
       )
       payments.value = response
@@ -33,10 +31,8 @@ export const usePaymentStore = defineStore("payment", () => {
     const data = await $fetch<{ clientSecret: string }>(
       `${useRuntimeConfig().public.API_BASE_URL}/payment-methods/setup-intent`,
       {
+        credentials: "include",
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${useCookie("auth_token").value}`,
-        },
       },
     )
     return data.clientSecret
@@ -49,14 +45,12 @@ export const usePaymentStore = defineStore("payment", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/payment-methods/save`,
         {
+          credentials: "include",
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
           body: { paymentMethodId, makeDefault },
         },
       )
-      await fetchUserPayments(useCookie("user_id").value ?? "")
+      await fetchUserPayments()
     } catch (err) {
       console.error("Failed to save payment method:", err)
       error.value = "Failed to save payment method."
@@ -72,13 +66,11 @@ export const usePaymentStore = defineStore("payment", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/payment-methods/${paymentMethodId}/default`,
         {
+          credentials: "include",
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
-      await fetchUserPayments(useCookie("user_id").value ?? "")
+      await fetchUserPayments()
     } catch (err) {
       console.error("Failed to set default payment method:", err)
       error.value = "Failed to update payment method."
@@ -94,13 +86,11 @@ export const usePaymentStore = defineStore("payment", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/payment-methods/${paymentMethodId}`,
         {
+          credentials: "include",
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
-      await fetchUserPayments(useCookie("user_id").value ?? "")
+      await fetchUserPayments()
     } catch (err) {
       console.error("Failed to delete payment method:", err)
       error.value = "Failed to delete payment method."

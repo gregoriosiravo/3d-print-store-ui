@@ -15,9 +15,7 @@ export const useOrderStore = defineStore("order", () => {
       const response = await $fetch<any[]>(
         `${useRuntimeConfig().public.API_BASE_URL}/orders`,
         {
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
+          credentials: "include",
         },
       )
       orders.value = response

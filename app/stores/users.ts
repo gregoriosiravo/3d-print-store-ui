@@ -41,33 +41,20 @@ export const useUserStore = defineStore("user", {
     userId: (state): string | null => state.user?.id || null,
   },
   actions: {
+    // The API sets the HttpOnly session cookie; the browser sends it back with credentials: "include"
     async login(email: string, password: string) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await $fetch<{ user: User; token?: string }>(
-          `${useRuntimeConfig().public.API_BASE_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          },
-        );
-        console.log("Login successful");
-        this.isAuthenticated = true;
-        if (response.token) {
-          useCookie("auth_token", {
-            maxAge: 60 * 60 * 24 * 3,
-            secure: true,
-            sameSite: "strict",
-          }).value = response.token;
-        }
+        await $fetch(`${useRuntimeConfig().public.API_BASE_URL}/auth/login`, {
+          method: "POST",
+          credentials: "include",
+          body: { email, password },
+        });
+        await this.fetchUser();
         await navigateTo("/");
       } catch (err) {
-        console.error(err);
-        console.log("Login failed");
+        console.error("Login failed:", err);
         throw err;
       } finally {
         this.loading = false;
@@ -75,16 +62,16 @@ export const useUserStore = defineStore("user", {
     },
     async logout() {
       try {
-        await $fetch("api/auth/logout", {
+        await $fetch(`${useRuntimeConfig().public.API_BASE_URL}/auth/logout`, {
           method: "POST",
+          credentials: "include",
         });
-        this.user = null;
-        this.isAuthenticated = false;
-        useCookie("auth_token").value = null;
-        await navigateTo("/");
       } catch (err) {
         console.error("Logout failed:", err);
       }
+      this.user = null;
+      this.isAuthenticated = false;
+      await navigateTo("/");
     },
     async registerUser(
       firstName: string,
@@ -93,58 +80,32 @@ export const useUserStore = defineStore("user", {
       password: string,
     ) {
       try {
-        const response = await $fetch<{ user: User; token?: string }>(
-          `${useRuntimeConfig().public.API_BASE_URL}/auth/register`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: email,
-              password: password,
-              firstName: firstName,
-              lastName: lastName,
-            }),
-          },
-        );
-        this.isAuthenticated = true;
-        if (response.token) {
-          useCookie("auth_token", {
-            maxAge: 60 * 60 * 24 * 3,
-            secure: true,
-            sameSite: "strict",
-          }).value = response.token;
-        }
-        console.log("Register and Login successful, user:", this.user);
-        await navigateTo("/"); //TODO: dinamically navigate to the last page visited or to the profile page
+        await $fetch(`${useRuntimeConfig().public.API_BASE_URL}/auth/register`, {
+          method: "POST",
+          credentials: "include",
+          body: { email, password, firstName, lastName },
+        });
+        await this.fetchUser();
+        await navigateTo("/");
       } catch (err) {
-        console.error("Navigation to register failed:", err);
+        console.error("Registration failed:", err);
         throw err;
       }
     },
+    // Asks the API who the session belongs to; no session (401) means logged out
     async fetchUser() {
       try {
-        const response = await fetch(
-          `${useRuntimeConfig().public.API_BASE_URL}/auth/profile`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${useCookie("auth_token").value}`,
-            },
-          },
-        );
-        const userData = await response.json();
-
-        console.log("Fetched user data:", userData);
+        const userData = await $fetch<any>(`${useRuntimeConfig().public.API_BASE_URL}/auth/profile`, {
+          credentials: "include",
+        });
         this.user = {
           ...userData,
           createdAt: new Date(userData.createdAt),
         };
         this.isAuthenticated = true;
-      } catch (err) {
-        console.error("Fetch user failed:", err);
+      } catch {
+        this.user = null;
+        this.isAuthenticated = false;
       }
     },
     //TODO: add update profile action

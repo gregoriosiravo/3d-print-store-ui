@@ -15,9 +15,7 @@ export const useAddressStore = defineStore("address", () => {
       const response = await $fetch<any[]>(
         `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/addresses`,
         {
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
+          credentials: "include",
         },
       )
       addresses.value = response
@@ -36,10 +34,8 @@ export const useAddressStore = defineStore("address", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/add`,
         {
+          credentials: "include",
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
           body: addressData,
         },
       )
@@ -59,10 +55,8 @@ export const useAddressStore = defineStore("address", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/edit/${addressId}`,
         {
+          credentials: "include",
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
           body: addressData,
         },
       )
@@ -82,10 +76,8 @@ export const useAddressStore = defineStore("address", () => {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/addresses/${addressId}`,
         {
+          credentials: "include",
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${useCookie("auth_token").value}`,
-          },
         },
       )
       await fetchUserAddresses(userId)
