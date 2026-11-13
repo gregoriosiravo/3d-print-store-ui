@@ -73,10 +73,11 @@ export const useQuoteCalculator = () => {
     { deep: true },
   )
 
-  const saveQuote = () => {
+  // Waits for the server to attach the quote, so the profile shows it as soon as it opens
+  const saveQuote = async () => {
     if (isAuthenticated.value && quoteStore.quoteId && userStore.userId) {
-      quoteStore.associateQuoteWithUser(userStore.userId, quoteStore.quoteId)
-      alert('Quote saved successfully!')
+      const saved = await quoteStore.associateQuoteWithUser(userStore.userId, quoteStore.quoteId)
+      alert(saved ? 'Quote saved successfully!' : 'The quote could not be saved. Please try again.')
     } else {
       navigateTo({
         path: '/login',

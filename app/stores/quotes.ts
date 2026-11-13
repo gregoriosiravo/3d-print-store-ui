@@ -42,7 +42,8 @@ export const useQuoteStore = defineStore("quote", () => {
     }
   }
 
-  async function associateQuoteWithUser(userId: string, quoteId: string) {
+  // Returns true when the server attached the quote to the user
+  async function associateQuoteWithUser(userId: string, quoteId: string): Promise<boolean> {
     try {
       await $fetch(
         `${useRuntimeConfig().public.API_BASE_URL}/quote/associate`,
@@ -55,9 +56,11 @@ export const useQuoteStore = defineStore("quote", () => {
           },
         },
       )
+      return true
     } catch (err) {
       console.error("Error associating quote with user:", err)
       error.value = "Failed to associate quote with user."
+      return false
     }
   }
 
