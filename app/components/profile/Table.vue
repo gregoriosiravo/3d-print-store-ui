@@ -21,7 +21,8 @@
                     <td class="text-end fw-semibold">{{ item.total_price || item.total_amount }}</td>
                     <td class="text-end" v-if="type == 'orders'">
                         <template v-if="item.status === 'cancelled'">
-                            <span class="small text-secondary">{{ item.payment_status === 'refunded' ? 'Refunded' : 'Cancelled' }}</span>
+                            <span v-if="item.payment_status === 'refunded'" class="small text-secondary">Refunded</span>
+                            <span v-else class="small fw-semibold text-cancelled">Cancelled</span>
                         </template>
                         <template v-else-if="item.payment_status === 'pending'">
                             <button class="btn btn-sm btn-success me-2" @click="emit('accept', item)">Pay</button>
@@ -83,6 +84,10 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
+.text-cancelled {
+    color: #fb923c;
+}
+
 thead {
     background-color: #0f1c2e !important;
     border-radius: 10px !important;
