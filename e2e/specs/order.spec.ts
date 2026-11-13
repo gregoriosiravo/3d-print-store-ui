@@ -30,6 +30,22 @@ test.describe('ordering as a signed-in customer', () => {
     await expect(page.locator('table tbody tr', { hasText: 'CANCELLED' }).first()).toBeVisible()
   })
 
+  test('a quote saved from the home page is listed in the profile without a reload', async ({ page }) => {
+    await stampQuotes(page)
+    const saver = await registerUser('saver')
+    await logInThroughForm(page, saver.email, PASSWORD)
+    await visit(page, '/')
+    await page.locator('input[type=file]').setInputFiles({ name: 'cube.stl', mimeType: 'model/stl', buffer: cubeStl() })
+    await expect(page.locator('[aria-label="Total price"]')).toContainText('€')
+
+    page.once('dialog', (dialog) => dialog.accept())
+    await page.getByRole('button', { name: 'Save current configuration' }).click()
+    // In-app navigation, no reload: the list must come from the server state at that moment
+    await page.locator('a[aria-label="Go to profile page"]').click()
+    await expect(page).toHaveURL(/\/profile$/)
+    await expect(page.locator('table').first().locator('tbody tr', { hasText: 'PENDING' }).first()).toBeVisible()
+  })
+
   test('paying with a test card marks the order paid in the profile', async ({ page }) => {
     await stampQuotes(page)
     await logInThroughForm(page, user.email, PASSWORD)
