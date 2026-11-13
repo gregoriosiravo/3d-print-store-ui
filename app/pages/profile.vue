@@ -48,15 +48,12 @@ definePageMeta({
     ssr: false,
     keepalive: true
 })
-onMounted(async () => {
+// The page is kept alive between visits, so its data is reloaded each time it is shown
+onActivated(async () => {
     await quoteStore.fetchUserQuotes()
-    console.log("Fetched user quotes:", quoteStore.getUserQuotes)
     await orderStore.fetchUserOrders()
-    console.log("Fetched user orders:", orderStore.getUserOrders)
     await addressStore.fetchUserAddresses(userStore.userId ?? '')
-    console.log("Fetched user addresses:", addressStore.getUserAddresses)
     await paymentStore.fetchUserPayments()
-    console.log("Fetched user payment methods:", paymentStore.getUserPayments)
 })
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
