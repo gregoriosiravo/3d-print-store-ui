@@ -14,6 +14,7 @@ Backend reference: [../../3d-print-shop-api/docs/api.md](../../3d-print-shop-api
 | UI | Bootstrap 5.3 (CDN, with SRI), custom CSS in `app/assets/css/main.css` (which also loads Bootstrap Icons) |
 | 3D preview | Three.js (`LiveRender.vue`) |
 | Payments | `@stripe/stripe-js`: `confirmPayment` on checkout, `confirmSetup` in the card modal |
+| End-to-end tests | Playwright Test (`@playwright/test`), in `e2e/` |
 
 ## Project layout
 
@@ -54,7 +55,9 @@ Rendering modes come from `routeRules` in `nuxt.config.ts`.
 | `/profile` | `pages/profile.vue` | landing | `auth` middleware | client only |
 | `/checkout/:orderId` | `pages/checkout/[orderId].vue` | landing | `auth` middleware | client only |
 | `/item-list`, `/item-list/:id` | `pages/item-list/` | | public | prerendered |
-| `/materials`, `/services`, `/marketplace` | placeholders, no content yet | landing | public | prerendered |
+| `/materials` | the materials from `GET /api/materials` | landing | public | prerendered, data loads in the browser |
+| `/services` | the print presets from `GET /api/print-presets` | landing | public | prerendered, data loads in the browser |
+| `/marketplace` | placeholder, no content yet | landing | public | prerendered |
 | `/prints` | placeholder, no content yet | | public | client only |
 | `/coming-soon` | `pages/coming-soon.vue` | landing | public | prerendered |
 | `/privacy`, `/terms`, `/enterprise`, `/api-documentation` | placeholder pages with a heading and a note that the text is being prepared | landing | public | prerendered |
@@ -193,10 +196,11 @@ sequenceDiagram
 
     U->>QS: Order now
     alt not logged in
-        C->>LG: navigate to /login?action=save-quote&quoteId=...&redirect=/
+        C->>LG: navigate to /login?action=order-now&quoteId=...
         LG->>API: POST /api/auth/login
-        LG->>API: POST /api/quote/associate (quote becomes theirs)
-        LG->>U: back to / (click Order now again)
+        LG->>Q: approveQuote(quoteId) (the quote becomes theirs)
+        Q->>API: POST /api/quote/:id/approve
+        LG->>CK: navigate to /checkout/:orderId
     else logged in
         C->>Q: approveQuote(quoteId)
         Q->>API: POST /api/quote/:id/approve (session cookie)
@@ -209,7 +213,7 @@ sequenceDiagram
     end
 ```
 
-A guest is sent back to the home page after login, so they click **Order now** a second time. The quote is already attached to their account at that point.
+A guest who logs in from **Order now** lands on the checkout for their order: the login page finishes the order itself, so no second click is needed. Saving a quote from the summary (`action=save-quote`) only attaches the quote and returns to the profile.
 
 ### Profile page
 
@@ -233,31 +237,51 @@ A guest is sent back to the home page after login, so they click **Order now** a
 | `profile/PaymentModal.vue` | Stripe card collection (`confirmSetup`) and save |
 | `Modal.vue`, `ui/Input.vue`, `ui/Container.vue` | Shared widgets |
 
+## Testing
+
+End-to-end tests drive the real stack (UI, API, PostgreSQL and Stripe test mode) in Chromium. Start the stack first, then run:
+
+```bash
+docker compose up -d           # from the repository root
+pnpm test:e2e                  # in 3d-print-store-ui
+```
+
+| File | Covers |
+|---|---|
+| `e2e/specs/public.spec.ts` | Home, materials and services from the API, footer page, redirect of `/profile` for anonymous visitors |
+| `e2e/specs/upload.spec.ts` | Non-STL rejection, a price for an STL, price changes with layer height and material |
+| `e2e/specs/account.spec.ts` | Wrong password, log in and log out, add addresses, switch the default and delete one, register from the form |
+| `e2e/specs/order.spec.ts` | Order now for a signed-in customer and cancel from the profile; a guest who logs in from Order now lands on checkout |
+
+How the data is kept apart: every user is registered as `probe-<stamp>-<tag>@example.com`, and every quote the browser creates is sent with the header `x-session-id: probe-<stamp>` (the spec helper adds it with a route handler). The global teardown counts what the stamp selects, deletes orders, then quotes and their uploads, then users, and fails the run if the counts do not match. Stripe test-mode objects are not cleaned up.
+
+Not covered: entering a card in Stripe's iframe, and the placeholder pages.
+
 ## Recent changes
 
 | Area | Change | Where |
 |---|---|---|
-| Session | The UI no longer reads or sends the token. Requests send the HttpOnly cookie (`credentials: "include"`). Login, register and logout go through the API; the plugin checks the session with `GET /api/auth/profile` | `stores/users.ts`, `stores/*.ts`, `plugins/auth.ts`, `pages/checkout/[orderId].vue` |
-| Logout | Logout called a relative URL, which reached the UI server instead of the API. It now calls the API | `stores/users.ts` |
-| Orders | Cancel on the profile page cancels an unpaid order and shows the API's message when it is refused | `stores/orders.ts` `cancelOrder`, `pages/profile.vue` |
-| Addresses | Any address that is not the default has a SET DEFAULT button | `components/profile/Address.vue`, `stores/addresses.ts` `setPrimaryAddress` |
-| Checkout | Returning from a 3-D Secure redirect shows the success view. The return URL is the checkout page | `pages/checkout/[orderId].vue` |
-| Dev server | The home page cache applies in production only, so the development server no longer serves stale HTML | `nuxt.config.ts` |
-| Cleanup | Unused `composables/useApi.ts` and `middleware/verify-email.ts` removed | |
+| Logout | The navbar had no logout control, so the store's `logout()` could never run. A Log out button now sits next to Profile | `components/ui/Navbar.vue` |
+| Guest order | After logging in from Order now, the login page approves the quote and opens its checkout. The store no longer navigates by itself, which had skipped the saved-quote step | `pages/login.vue`, `stores/users.ts`, `composables/useQuoteCalculator.ts` |
+| Materials and services | Both pages are built from the API instead of being empty | `pages/materials.vue`, `pages/services.vue` |
+| Cancel | Cancelling a paid order asks for confirmation and says the payment will be refunded. A refused cancel shows the API's message | `pages/profile.vue` |
+| End-to-end tests | 14 Playwright tests with stamp-based teardown; the suite passes on repeated runs | `e2e/`, `playwright.config.ts` |
+| Dependencies | `glob` and `minimatch` forced to patched versions with pnpm overrides; one low advisory remains (see below) | `pnpm-workspace.yaml` |
 
 ## Known issues
 
-1. **Placeholder content.** `/materials`, `/services`, `/marketplace` and `/prints` have no content, and the four footer pages say the text is being prepared. The content is for the content owner to write.
-2. **Paid orders cannot be cancelled from the UI.** The API refuses (409) and the page shows the message. Refunds are not built.
-3. **The guest login flow needs a second click.** After logging in from **Order now**, the user returns to the home page and must click **Order now** again. The quote is already attached to their account by then.
-4. **Development ports are published on localhost only.** Docker publishes the UI, API and database on `127.0.0.1`. The dev server still listens on all interfaces inside the container, so reach it through the published port only.
+1. **Placeholder content.** `/marketplace` and `/prints` have no content, and the four footer pages (privacy, terms, enterprise, API documentation) say the text is being prepared. The content is for the content owner to write.
+2. **The navbar search submits to `/search`, which does not exist.** It leads to a 404. Either build the search page or remove the form.
+3. **One low advisory has no fix.** `deepmerge` (used by Nuxt's build tooling through `nitropack`) has no patched release. It is not part of the browser code.
+4. **Card entry is not tested end to end.** Stripe's payment fields are in a cross-origin iframe; the tests stop before payment.
+
 
 ## Running
 
 From the repository root:
 
 ```bash
-docker compose up --build      # UI on http://localhost:3000
+docker compose up --build      # UI on http://localhost:3000 (published on 127.0.0.1)
 ```
 
 Without Docker:
@@ -266,6 +290,7 @@ Without Docker:
 pnpm install
 pnpm dev                       # http://localhost:3000, expects the API on :4000
 pnpm build                     # production build
+pnpm test:e2e                  # end-to-end tests, needs the stack running
 ```
 
 The `postinstall` script runs `nuxt prepare`. `pnpm-lock.yaml` is the lockfile in use (`package-lock.json` is older).
