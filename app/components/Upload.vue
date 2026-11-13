@@ -11,13 +11,13 @@
         </h2>
         <p class="text-secondary-light mb-3 small">
             Drag and drop your files here or browse your computer.<br class="d-none d-md-inline">
-            Supports STL, OBJ, STEP up to 100MB.
+            Supports STL files up to 50MB.
         </p>
         <button type="button" class="btn btn-primary px-4" @click.stop="handleUploadClick"
             aria-label="Select 3D model files from your computer">
             Select Files
         </button>
-        <input type="file" ref="fileInput" class="visually-hidden" accept=".stl,.obj,.step" @change="handleFileChange"
+        <input type="file" ref="fileInput" class="visually-hidden" accept=".stl" @change="handleFileChange"
             aria-label="Upload 3D model file" />
 
         <!-- Show uploaded file name -->
@@ -25,6 +25,7 @@
             <i class="bi bi-file-earmark-check me-1"></i>
             {{ fileName }}
         </p>
+        <p v-if="error" class="mt-2 mb-0 small text-danger" role="alert">{{ error }}</p>
     </section>
 </template>
 

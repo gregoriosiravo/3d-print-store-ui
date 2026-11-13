@@ -4,7 +4,8 @@ interface FileUploadOptions {
 }
 
 export const useFileUpload = (options: FileUploadOptions = {}) => {
-  const { validTypes = ['.stl', '.obj', '.step'], maxSizeMB = 100 } = options
+  // Must match the API: STL only, 50 MB (routes/quote.route.ts)
+  const { validTypes = ['.stl'], maxSizeMB = 50 } = options
 
   const file = ref<File | null>(null)
   const fileName = ref('')
