@@ -13,7 +13,7 @@
                 </Table>
                 <br>
                 <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="orders"
-                    type="orders" @accept="handlePay" @decline="handleCancelOrder">
+                    type="orders" @accept="handlePay" @decline="handleCancelOrder" @refund="handleRequestRefund">
                 </Table>
             </div>
             <div class="col-md-3">
@@ -88,6 +88,12 @@ const handleDecline = (data: any) => {
 const handlePay = (data: any) => {
     console.log("Paying order:", data)
     navigateTo(`/checkout/${data.id}`)
+}
+
+const handleRequestRefund = async (data: any) => {
+    if (!confirm('Ask for a refund of this order?')) return
+    await orderStore.requestRefund(data.id)
+    if (orderStore.error) alert(orderStore.error)
 }
 
 const handleCancelOrder = async (data: any) => {

@@ -44,6 +44,23 @@ export const useOrderStore = defineStore("order", () => {
     }
   }
 
+  async function requestRefund(orderId: string) {
+    error.value = null
+    try {
+      await $fetch(
+        `${useRuntimeConfig().public.API_BASE_URL}/orders/${orderId}/refund-request`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      )
+      await fetchUserOrders()
+    } catch (err) {
+      console.error("Failed to request refund:", err)
+      error.value = "This order cannot be refunded."
+    }
+  }
+
   return {
     orders,
     loading,
@@ -51,5 +68,6 @@ export const useOrderStore = defineStore("order", () => {
     getUserOrders,
     fetchUserOrders,
     cancelOrder,
+    requestRefund,
   }
 })

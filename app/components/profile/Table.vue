@@ -19,7 +19,19 @@
                             }}</span>
                     </td>
                     <td class="text-end fw-semibold">{{ item.total_price || item.total_amount }}</td>
-                    <td class="text-end position-relative" v-if="item.status != 'accepted'">
+                    <td class="text-end" v-if="type == 'orders'">
+                        <template v-if="item.status === 'cancelled'">
+                            <span class="small text-secondary">{{ item.payment_status === 'refunded' ? 'Refunded' : 'Cancelled' }}</span>
+                        </template>
+                        <template v-else-if="item.payment_status === 'pending'">
+                            <button class="btn btn-sm btn-success me-2" @click="emit('accept', item)">Pay</button>
+                            <button class="btn btn-sm btn-outline-danger" @click="emit('decline', item)">Cancel</button>
+                        </template>
+                        <button v-else-if="item.payment_status === 'paid'" class="btn btn-sm btn-outline-warning"
+                            @click="emit('refund', item)">Ask refund</button>
+                        <span v-else class="small text-secondary">{{ item.payment_status === 'refund_requested' ? 'Refund requested' : item.payment_status }}</span>
+                    </td>
+                    <td class="text-end position-relative" v-else-if="item.status != 'accepted'">
                         <i class="bi bi-three-dots-vertical action-dots" @click.stop="toggleMenu(item.id)"></i>
                         <div v-if="openMenuId === item.id" class="action-menu">
                             <button class="action-menu-item text-success btn btn-sm" @click="emit('accept', item)">
@@ -59,6 +71,7 @@ onUnmounted(() => {
 const emit = defineEmits<{
     accept: [item: Record<string, any>]
     decline: [item: Record<string, any>]
+    refund: [item: Record<string, any>]
 }>()
 </script>
 
