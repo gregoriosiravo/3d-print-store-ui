@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { PASSWORD } from '../support/env'
 import { cubeStl, loginApi, registerUser } from '../support/api'
 import { saveTestCard } from '../support/stripe'
+import { createPool } from '../support/db'
 import { logInThroughForm, stampQuotes, visit } from '../support/session'
 
 test.describe('paying with a saved card', () => {
@@ -70,7 +71,7 @@ test.describe('paying with a saved card', () => {
     await expect(ordersTable.locator('tbody tr', { hasText: 'PROCESSING' })).toHaveCount(processingBefore + 1)
     await expect(ordersTable.locator('tbody tr', { hasText: 'PENDING' })).toHaveCount(0)
   })
-  test('a paid order offers Ask refund instead of Pay and Cancel, and the request is recorded', async ({ page }) => {
+  test('a paid order offers Ask refund only once it is received', async ({ page }) => {
     await stampQuotes(page)
     await logInThroughForm(page, user.email, PASSWORD)
     await visit(page, '/')
@@ -80,6 +81,7 @@ test.describe('paying with a saved card', () => {
     await expect(page.locator('[aria-label="Total price"]')).not.toHaveText(/€0\.00/)
     await page.getByRole('button', { name: 'Order Now' }).click()
     await expect(page).toHaveURL(/\/checkout\/[0-9a-f-]{36}$/)
+    const orderId = page.url().split('/').pop() as string
     await page.fill('#inputName', 'Probe')
     await page.fill('#inputSurname', 'User')
     await page.fill('#inputAddress', 'Via Test 3')
@@ -92,14 +94,27 @@ test.describe('paying with a saved card', () => {
     await page.locator('a[aria-label="Go to profile page"]').click()
     await expect(page).toHaveURL(/\/profile$/)
     const ordersTable = page.locator('table').nth(1)
-    const paidRow = ordersTable.locator('tbody tr', { hasText: 'PROCESSING' }).first()
-    await expect(paidRow.getByRole('button', { name: 'Ask refund' })).toBeVisible()
-    await expect(paidRow.getByRole('button', { name: 'Pay' })).toHaveCount(0)
-    await expect(paidRow.getByRole('button', { name: 'Cancel' })).toHaveCount(0)
-    await expect(paidRow.locator('.action-dots')).toHaveCount(0)
+    // Paid but not received yet: no processing row offers a refund, nor Pay or Cancel
+    const processingRows = ordersTable.locator('tbody tr', { hasText: 'PROCESSING' })
+    await expect(processingRows.first()).toBeVisible()
+    await expect(processingRows.getByRole('button', { name: 'Ask refund' })).toHaveCount(0)
+    await expect(processingRows.getByRole('button', { name: 'Pay' })).toHaveCount(0)
+    await expect(processingRows.getByRole('button', { name: 'Cancel' })).toHaveCount(0)
+
+    // The order is delivered: set its status the way the shop will (here, directly in the database)
+    const db = createPool()
+    try {
+      await db.query("UPDATE orders SET status = 'received' WHERE id = $1", [orderId])
+    } finally {
+      await db.end()
+    }
+    await visit(page, '/profile')
+    const receivedRow = ordersTable.locator('tbody tr', { hasText: 'RECEIVED' }).first()
+    await expect(receivedRow.getByRole('button', { name: 'Ask refund' })).toBeVisible()
+    await expect(receivedRow.getByRole('button', { name: 'Pay' })).toHaveCount(0)
 
     page.once('dialog', (dialog) => dialog.accept())
-    await paidRow.getByRole('button', { name: 'Ask refund' }).click()
+    await receivedRow.getByRole('button', { name: 'Ask refund' }).click()
     await expect(ordersTable.getByText('Refund requested').first()).toBeVisible()
   })
 })

@@ -27,9 +27,9 @@
                             <button class="btn btn-sm btn-success me-2" @click="emit('accept', item)">Pay</button>
                             <button class="btn btn-sm btn-outline-danger" @click="emit('decline', item)">Cancel</button>
                         </template>
-                        <button v-else-if="item.payment_status === 'paid'" class="btn btn-sm btn-outline-warning"
+                        <button v-else-if="item.payment_status === 'paid' && item.status === 'received'" class="btn btn-sm btn-outline-warning"
                             @click="emit('refund', item)">Ask refund</button>
-                        <span v-else class="small text-secondary">{{ item.payment_status === 'refund_requested' ? 'Refund requested' : item.payment_status }}</span>
+                        <span v-else class="small text-secondary text-capitalize">{{ orderLabel(item) }}</span>
                     </td>
                     <td class="text-end position-relative" v-else-if="item.status != 'accepted'">
                         <i class="bi bi-three-dots-vertical action-dots" @click.stop="toggleMenu(item.id)"></i>
@@ -57,6 +57,13 @@ const props = defineProps<{
     items: Record<string, any>[]
 }>()
 const openMenuId = ref<string | null>(null)
+
+// Text for an order that has no actions: its refund state, or its fulfilment status
+const orderLabel = (item: Record<string, any>) => {
+    if (item.payment_status === 'refund_requested') return 'Refund requested'
+    if (item.payment_status === 'refunded') return 'Refunded'
+    return item.status
+}
 
 const toggleMenu = (id: string) => {
     openMenuId.value = openMenuId.value === id ? null : id
