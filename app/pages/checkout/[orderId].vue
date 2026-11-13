@@ -17,7 +17,7 @@
                 <div v-show="selectedCard === 'new'" id="payment-element" class="form-control custom-width"></div>
                 <p v-if="error" class="text-danger text-center">{{ error }}</p>
                 <div class="text-center mb-4">
-                    <button @click="handlePay" :disabled="loading" class="btn btn-primary margin">
+                    <button @click="handlePay" :disabled="loading || !stripe" class="btn btn-primary margin">
                         {{ loading ? 'Processing...' : 'Pay Now' }}
                     </button>
                 </div>
@@ -80,12 +80,13 @@ onMounted(async () => {
             }
         )
         clientSecret.value = data.clientSecret
-        await paymentStore.fetchUserPayments()
-        const defaultCard = savedCards.value.find((card) => card.isDefault)
-        selectedCard.value = defaultCard ? defaultCard.id : 'new'
         stripe.value = await loadStripe(config.public.STRIPE_PUBLIC_KEY)
         elements.value = stripe.value.elements({ clientSecret: clientSecret.value })
         elements.value.create('payment').mount('#payment-element')
+        // Saved cards load in the background; the default one is preselected when they arrive
+        await paymentStore.fetchUserPayments()
+        const defaultCard = savedCards.value.find((card) => card.isDefault)
+        selectedCard.value = defaultCard ? defaultCard.id : 'new'
     } catch (err: any) {
         // The API refuses to start a second payment for a paid order: show the success view
         if (err?.data?.error === 'Order is already paid') {
@@ -117,6 +118,7 @@ const recordPayment = async () => {
 }
 
 const handlePay = async () => {
+    if (!stripe.value) return
     loading.value = true
     error.value = ''
     console.log("Submitting payment for order:", orderId)
