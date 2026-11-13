@@ -100,23 +100,24 @@ export const useQuoteStore = defineStore("quote", () => {
     }
   }
 
-  async function approveQuote(quoteId: string, totalPrice: number) {
+  // Creates a pending order at the quote's stored price. Returns the order, or null on failure.
+  async function approveQuote(quoteId: string) {
     try {
-      await $fetch(
+      const order = await $fetch<{ orderId: string; orderNumber: string }>(
         `${useRuntimeConfig().public.API_BASE_URL}/quote/${quoteId}/approve`,
         {
           method: "POST",
-          body: { totalPrice },
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${useCookie("auth_token").value}`,
           },
         },
       )
       await fetchUserQuotes()
       await useOrderStore().fetchUserOrders()
+      return order
     } catch (err) {
       console.error("Error approving quote:", err)
+      return null
     }
   }
 

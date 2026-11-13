@@ -85,12 +85,25 @@ export const useQuoteCalculator = () => {
     }
   }
 
-  const orderNow = () => {
-    if (isAuthenticated.value) {
-      alert('Proceeding to checkout!')
+  // Creates the order from the current quote, then opens checkout for it.
+  // Guests log in first; the login page attaches the quote to their account.
+  const orderNow = async () => {
+    if (!isAuthenticated.value) {
+      await navigateTo({
+        path: '/login',
+        query: { action: 'save-quote', quoteId: quoteStore.quoteId, redirect: '/' },
+      })
+      return
+    }
+    if (!quoteStore.quoteId) {
+      alert('Upload a file and choose your options first.')
+      return
+    }
+    const order = await quoteStore.approveQuote(quoteStore.quoteId)
+    if (order) {
+      await navigateTo(`/checkout/${order.orderId}`)
     } else {
-      navigateTo('/login')
-      alert('Please log in to proceed to checkout.')
+      alert('Could not create the order. Please try again.')
     }
   }
 
