@@ -67,8 +67,14 @@ onMounted(async () => {
         stripe.value = await loadStripe(config.public.STRIPE_PUBLIC_KEY)
         elements.value = stripe.value.elements({ clientSecret: clientSecret.value })
         elements.value.create('payment').mount('#payment-element')
-    } catch (err) {
-        console.error('Checkout init failed:', err)
+    } catch (err: any) {
+        // The API refuses to start a second payment for a paid order: show the success view
+        if (err?.data?.error === 'Order is already paid') {
+            paymentSuccess.value = true
+        } else {
+            console.error('Checkout init failed:', err)
+            error.value = 'The payment could not be started. Reload the page to try again.'
+        }
     }
     try {
         await addressStore.fetchUserAddresses(userStore.userId)
