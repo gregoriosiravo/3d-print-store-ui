@@ -93,7 +93,7 @@ const handlePay = async () => {
     const { error: stripeError, paymentIntent } = await stripe.value.confirmPayment({
         elements: elements.value,
         confirmParams: {
-            return_url: `${window.location.origin}/orders/${orderId}/success`
+            return_url: `${window.location.origin}/profile`
         },
         redirect: 'if_required'
     })
