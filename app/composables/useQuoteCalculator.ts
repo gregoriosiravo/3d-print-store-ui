@@ -91,7 +91,7 @@ export const useQuoteCalculator = () => {
     if (!isAuthenticated.value) {
       await navigateTo({
         path: '/login',
-        query: { action: 'save-quote', quoteId: quoteStore.quoteId, redirect: '/' },
+        query: { action: 'order-now', quoteId: quoteStore.quoteId },
       })
       return
     }

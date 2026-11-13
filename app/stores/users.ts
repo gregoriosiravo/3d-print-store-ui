@@ -52,7 +52,6 @@ export const useUserStore = defineStore("user", {
           body: { email, password },
         });
         await this.fetchUser();
-        await navigateTo("/");
       } catch (err) {
         console.error("Login failed:", err);
         throw err;
@@ -86,7 +85,6 @@ export const useUserStore = defineStore("user", {
           body: { email, password, firstName, lastName },
         });
         await this.fetchUser();
-        await navigateTo("/");
       } catch (err) {
         console.error("Registration failed:", err);
         throw err;

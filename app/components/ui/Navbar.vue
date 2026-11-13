@@ -64,6 +64,11 @@
                                 Profile
                             </NuxtLink>
 
+                            <button type="button" class="btn btn-outline-light btn-sm fw-semibold ms-2"
+                                aria-label="Log out" @click="store.logout()">
+                                Log out
+                            </button>
+
                             <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
                                 <div class="rounded-circle bg-gradient"
                                     style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"

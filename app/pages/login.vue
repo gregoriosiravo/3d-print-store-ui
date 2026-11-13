@@ -74,6 +74,24 @@ const title = computed(() => (isLogin.value ? 'Welcome Back!' : 'Create Account!
 const isLogin = ref(true);
 const openModal = ref(false);
 
+// After signing in, the page finishes whatever the visitor was doing with a quote
+const continueAfterAuth = async () => {
+    const action = route.query.action
+    const quoteId = route.query.quoteId as string | undefined
+
+    if (action === 'save-quote' && quoteId) {
+        await quoteStore.associateQuoteWithUser(userId.value ?? '', quoteId)
+    }
+    if (action === 'order-now' && quoteId) {
+        const order = await quoteStore.approveQuote(quoteId)
+        if (order) {
+            await navigateTo(`/checkout/${order.orderId}`)
+            return
+        }
+    }
+    await navigateTo((route.query.redirect as string) || '/profile')
+}
+
 const handleLogin = async () => {
     clearErrors()
     const valid = validate({
@@ -84,21 +102,12 @@ const handleLogin = async () => {
 
     try {
         await login(user.email, user.password)
-
-        const action = route.query.action
-        const quoteId = route.query.quoteId
-
-        if (action === 'save-quote' && quoteId && userId.value) {
-            await quoteStore.associateQuoteWithUser(userId.value, quoteId as string)
-        }
-        await fetchUser()
-
-        const redirectPath = (route.query.redirect as string) || '/profile'
-        await navigateTo(redirectPath)
     } catch (error) {
         errors.password = 'Invalid email or password'
         openModal.value = true
+        return
     }
+    await continueAfterAuth()
 }
 
 const switchToRegister = () => {
@@ -119,19 +128,11 @@ const handleRegister = async () => {
 
     try {
         await register(user.firstName, user.lastName, user.email, user.password)
-        await fetchUser()
-        const action = route.query.action
-        const quoteId = route.query.quoteId
-
-        if (action === 'save-quote' && quoteId) {
-            await quoteStore.associateQuoteWithUser(userId.value ?? "", quoteId as string)
-        }
-
-        const redirectPath = (route.query.redirect as string) || '/profile'
-        await navigateTo(redirectPath)
     } catch (error) {
         console.error('Registration failed:', error)
+        return
     }
+    await continueAfterAuth()
 }
 </script>
 
