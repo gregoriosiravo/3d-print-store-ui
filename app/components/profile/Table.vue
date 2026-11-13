@@ -14,23 +14,21 @@
                     <td class="text-secondary">{{ type == 'quotes' ? '#QUO-' + item.id : '#' + item.order_number
                         }}</td>
                     <td>
-                        <span class="badge rounded-pill  text-uppercase"
-                            :class="item.status === 'pending' ? 'status-printing' : 'status-shipped'">{{ item.status
+                        <span class="badge rounded-pill  text-uppercase" :class="statusClass(item)">{{ item.status
                             }}</span>
                     </td>
                     <td class="text-end fw-semibold">{{ item.total_price || item.total_amount }}</td>
                     <td class="text-end" v-if="type == 'orders'">
-                        <template v-if="item.status === 'cancelled'">
-                            <span v-if="item.payment_status === 'refunded'" class="small text-secondary">Refunded</span>
-                            <span v-else class="small fw-semibold text-cancelled">Cancelled</span>
-                        </template>
+                        <!-- Nothing to do while the order is cancelled or being processed -->
+                        <template v-if="item.status === 'cancelled' || item.status === 'processing'"></template>
                         <template v-else-if="item.payment_status === 'pending'">
                             <button class="btn btn-sm btn-success me-2" @click="emit('accept', item)">Pay</button>
                             <button class="btn btn-sm btn-outline-danger" @click="emit('decline', item)">Cancel</button>
                         </template>
                         <button v-else-if="item.payment_status === 'paid' && item.status === 'received'" class="btn btn-sm btn-outline-warning"
                             @click="emit('refund', item)">Ask refund</button>
-                        <span v-else class="small text-secondary text-capitalize">{{ orderLabel(item) }}</span>
+                        <span v-else-if="item.payment_status === 'refund_requested'" class="small text-secondary">Refund requested</span>
+                        <span v-else-if="item.payment_status === 'refunded'" class="small text-secondary">Refunded</span>
                     </td>
                     <td class="text-end position-relative" v-else-if="item.status != 'accepted'">
                         <i class="bi bi-three-dots-vertical action-dots" @click.stop="toggleMenu(item.id)"></i>
@@ -59,11 +57,11 @@ const props = defineProps<{
 }>()
 const openMenuId = ref<string | null>(null)
 
-// Text for an order that has no actions: its refund state, or its fulfilment status
-const orderLabel = (item: Record<string, any>) => {
-    if (item.payment_status === 'refund_requested') return 'Refund requested'
-    if (item.payment_status === 'refunded') return 'Refunded'
-    return item.status
+// Colour of the status badge: cancelled is orange, pending is blue, everything else green
+const statusClass = (item: Record<string, any>) => {
+    if (item.status === 'cancelled') return 'status-cancelled'
+    if (item.status === 'pending') return 'status-printing'
+    return 'status-shipped'
 }
 
 const toggleMenu = (id: string) => {
@@ -84,8 +82,11 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
-.text-cancelled {
+.status-cancelled {
     color: #fb923c;
+    background-color: rgba(251, 146, 60, 0.15);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
 }
 
 thead {

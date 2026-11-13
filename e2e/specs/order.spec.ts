@@ -89,7 +89,7 @@ test.describe('ordering as a signed-in customer', () => {
     await expect(page).toHaveURL(/\/checkout\/[0-9a-f-]{36}$/)
     await expect(page.getByRole('button', { name: 'Pay Now' })).toBeVisible()
   })
-  test('a cancelled order shows its label in orange', async ({ page }) => {
+  test('a cancelled order shows an orange status and no action', async ({ page }) => {
     await stampQuotes(page)
     await logInThroughForm(page, user.email, PASSWORD)
     await visit(page, '/')
@@ -105,8 +105,10 @@ test.describe('ordering as a signed-in customer', () => {
     const row = ordersTable.locator('tbody tr', { hasText: 'PENDING' }).first()
     page.once('dialog', (dialog) => dialog.accept())
     await row.getByRole('button', { name: 'Cancel' }).click()
-    const label = ordersTable.locator('tbody tr span.text-cancelled', { hasText: 'Cancelled' }).first()
-    await expect(label).toBeVisible()
-    await expect(label).toHaveCSS('color', 'rgb(251, 146, 60)')
+    // The status badge is orange, and the action column has nothing left to do
+    const badge = ordersTable.locator('tbody tr span.status-cancelled', { hasText: 'cancelled' }).first()
+    await expect(badge).toBeVisible()
+    await expect(badge).toHaveCSS('color', 'rgb(251, 146, 60)')
+    await expect(badge.locator('xpath=ancestor::tr').locator('td').last()).toBeEmpty()
   })
 })
