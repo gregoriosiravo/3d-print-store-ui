@@ -30,6 +30,34 @@ test.describe('ordering as a signed-in customer', () => {
     await expect(page.locator('table tbody tr', { hasText: 'CANCELLED' }).first()).toBeVisible()
   })
 
+  test('paying with a test card marks the order paid in the profile', async ({ page }) => {
+    await stampQuotes(page)
+    await logInThroughForm(page, user.email, PASSWORD)
+    await visit(page, '/')
+    await page.locator('input[type=file]').setInputFiles({ name: 'cube.stl', mimeType: 'model/stl', buffer: cubeStl() })
+    await expect(page.locator('[aria-label="Total price"]')).toContainText('€')
+    await page.getByRole('button', { name: 'Order Now' }).click()
+    await expect(page).toHaveURL(/\/checkout\/[0-9a-f-]{36}$/)
+
+    await page.fill('#inputName', 'Probe')
+    await page.fill('#inputSurname', 'User')
+    await page.fill('#inputAddress', 'Via Test 1')
+    await page.fill('#inputCity', 'Roma')
+    await page.fill('#inputZip', '00100')
+    await page.fill('#inputState', 'Italia')
+
+    // Stripe's Payment Element is a cross-origin iframe with the standard test card
+    const card = page.frameLocator('iframe[title*="Secure payment input"]').first()
+    await card.locator('input[name=number]').fill('4242424242424242')
+    await card.locator('input[name=expiry]').fill('1234')
+    await card.locator('input[name=cvc]').fill('123')
+    await page.getByRole('button', { name: 'Pay Now' }).click()
+    await expect(page.getByText('Payment succeeded!')).toBeVisible({ timeout: 90_000 })
+
+    await visit(page, '/profile')
+    await expect(page.locator('table tbody tr', { hasText: 'PROCESSING' }).first()).toBeVisible()
+  })
+
   test('a guest who logs in from Order now lands on checkout', async ({ page }) => {
     await stampQuotes(page)
     await visit(page, '/')
