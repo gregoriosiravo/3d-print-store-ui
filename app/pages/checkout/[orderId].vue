@@ -52,7 +52,7 @@ const addressPrecompiled = computed(() => {
 onMounted(async () => {
     // Back from a 3-D Secure redirect: Stripe puts the outcome in the URL
     if (route.query.redirect_status === 'succeeded') {
-        paymentSuccess.value = true
+        await recordPayment()
         return
     }
     try {
@@ -77,6 +77,19 @@ onMounted(async () => {
         console.error('Failed to fetch address details:', error)
     }
 })
+
+// Asks the API to check the payment with Stripe and mark the order paid
+const recordPayment = async () => {
+    try {
+        await $fetch(`${config.public.API_BASE_URL}/orders/${orderId}/confirm-payment`, {
+            method: 'POST',
+            credentials: 'include',
+        })
+    } catch (err) {
+        console.error('Payment confirmation failed:', err)
+    }
+    paymentSuccess.value = true
+}
 
 const handlePay = async () => {
     loading.value = true
@@ -107,7 +120,7 @@ const handlePay = async () => {
         error.value = stripeError.message
         loading.value = false
     } else if (paymentIntent?.status === 'succeeded') {
-        paymentSuccess.value = true
+        await recordPayment()
         loading.value = false
     }
 }
