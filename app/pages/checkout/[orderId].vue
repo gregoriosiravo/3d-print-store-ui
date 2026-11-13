@@ -54,6 +54,7 @@ const loading = ref(false)
 const error = ref('')
 const paymentSuccess = ref(false)
 const addressStore = useAddressStore();
+const userStore = useUserStore();
 const paymentStore = usePaymentStore();
 
 // Saved cards; the default one is preselected, or a new card when there are none
