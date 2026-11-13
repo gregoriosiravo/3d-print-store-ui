@@ -5,7 +5,16 @@
                 <AddressForm ref="addressForm" :addressPrecompiled="addressPrecompiled" :isCheckout="true" />
             </div>
             <div class="col-md-7">
-                <div id="payment-element" class="form-control custom-width"></div>
+                <div class="custom-width">
+                    <label for="payCard" class="form-label text-uppercase text-secondary small fw-semibold">Pay with</label>
+                    <select id="payCard" v-model="selectedCard" class="form-select form-select-dark" data-testid="pay-with">
+                        <option v-for="card in savedCards" :key="card.id" :value="card.id">
+                            {{ (card.brand ?? 'Card').toUpperCase() }} •••• {{ card.last4 }}{{ card.isDefault ? ' (default)' : '' }}
+                        </option>
+                        <option value="new">Use a new card</option>
+                    </select>
+                </div>
+                <div v-show="selectedCard === 'new'" id="payment-element" class="form-control custom-width"></div>
                 <p v-if="error" class="text-danger text-center">{{ error }}</p>
                 <div class="text-center mb-4">
                     <button @click="handlePay" :disabled="loading" class="btn btn-primary margin">
@@ -27,6 +36,7 @@
 <script setup lang="ts">
 import { loadStripe } from '@stripe/stripe-js'
 import AddressForm from '~/components/AddressForm.vue'
+import type { PaymentMethodDto } from '~/types/payment'
 
 definePageMeta({ layout: "landing", middleware: ["auth"], ssr: false })
 
@@ -44,6 +54,11 @@ const loading = ref(false)
 const error = ref('')
 const paymentSuccess = ref(false)
 const addressStore = useAddressStore();
+const paymentStore = usePaymentStore();
+
+// Saved cards; the default one is preselected, or a new card when there are none
+const savedCards = computed<PaymentMethodDto[]>(() => paymentStore.getUserPayments)
+const selectedCard = ref<string>('new')
 
 const addressPrecompiled = computed(() => {
     const addresses = addressStore.getUserAddresses
@@ -64,6 +79,9 @@ onMounted(async () => {
             }
         )
         clientSecret.value = data.clientSecret
+        await paymentStore.fetchUserPayments()
+        const defaultCard = savedCards.value.find((card) => card.isDefault)
+        selectedCard.value = defaultCard ? defaultCard.id : 'new'
         stripe.value = await loadStripe(config.public.STRIPE_PUBLIC_KEY)
         elements.value = stripe.value.elements({ clientSecret: clientSecret.value })
         elements.value.create('payment').mount('#payment-element')
@@ -114,13 +132,21 @@ const handlePay = async () => {
         return
     }
 
-    const { error: stripeError, paymentIntent } = await stripe.value.confirmPayment({
-        elements: elements.value,
-        confirmParams: {
-            return_url: `${window.location.origin}/checkout/${orderId}`
-        },
-        redirect: 'if_required'
-    })
+    const savedCard = savedCards.value.find((card) => card.id === selectedCard.value)
+    const outcome = savedCard
+        // A saved card is confirmed with its Stripe reference; the Payment Element is not used
+        ? await stripe.value.confirmCardPayment(clientSecret.value, {
+            payment_method: savedCard.stripePaymentMethodId,
+        })
+        : await stripe.value.confirmPayment({
+            elements: elements.value,
+            confirmParams: {
+                return_url: `${window.location.origin}/checkout/${orderId}`
+            },
+            redirect: 'if_required'
+        })
+    const stripeError = outcome.error
+    const paymentIntent = outcome.paymentIntent
 
     if (stripeError) {
         error.value = stripeError.message
@@ -136,6 +162,12 @@ const handlePay = async () => {
 <style scoped>
 .custom-width {
     margin: 2rem auto;
+}
+
+.form-select-dark {
+    background-color: #1a2942;
+    border: none;
+    color: #e5e7eb;
 }
 
 .margin {

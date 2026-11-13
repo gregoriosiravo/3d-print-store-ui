@@ -32,3 +32,14 @@ export function cubeStl(): Buffer {
   lines.push('endsolid probe')
   return Buffer.from(lines.join('\n'))
 }
+
+// Signs in through the API and returns the bearer token, for setup that needs the API directly
+export async function loginApi(email: string, password: string): Promise<string> {
+  const res = await fetch(`${API}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+  if (res.status !== 200) throw new Error(`login ${email} failed: ${res.status}`)
+  return (await res.json()).token as string
+}
