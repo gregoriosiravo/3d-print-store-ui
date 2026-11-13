@@ -43,12 +43,12 @@
                 </div>
                 <div class="col-md-4 col-sm-6">
                     <UiInput id="material-resin" name="material" type="radio" label-class="material-card w-100"
-                        @chosen="handleMaterialSelect('petg-cf')">
+                        @chosen="handleMaterialSelect('petg')">
                         <div class="d-flex align-items-center mb-2">
                             <div class="material-icon bg-purple-subtle me-2" aria-hidden="true">
                                 <i class="bi bi-droplet"></i>
                             </div>
-                            <span class="fw-semibold text-white">PETG-CF</span>
+                            <span class="fw-semibold text-white">PETG Clear</span>
                         </div>
                         <p class="small text-secondary-light mb-0">Ultra-High Detail</p>
                     </UiInput>
@@ -159,7 +159,7 @@ const handleInfillChange = (event: Event) => {
 const handleMaterialSelect = (value: string) => {
     if (value === 'pla') choosenMaterial.id = 1;
     else if (value === 'abs') choosenMaterial.id = 4;
-    else if (value === 'petg-cf') choosenMaterial.id = 5;
+    else if (value === 'petg') choosenMaterial.id = 5;
     choosenMaterial.material = value;
     console.log('Material selected:', value);
 }
