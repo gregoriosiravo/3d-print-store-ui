@@ -89,6 +89,22 @@ export const useAddressStore = defineStore("address", () => {
     }
   }
 
+  async function setPrimaryAddress(userId: string, addressId: string) {
+    try {
+      await $fetch(
+        `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/addresses/${addressId}/primary`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        },
+      )
+      await fetchUserAddresses(userId)
+    } catch (err) {
+      console.error("Failed to set default address:", err)
+      error.value = "Failed to set the default address. Please try again."
+    }
+  }
+
   return {
     addresses,
     loading,
@@ -98,5 +114,6 @@ export const useAddressStore = defineStore("address", () => {
     addAddress,
     editAddress,
     deleteAddress,
+    setPrimaryAddress,
   }
 })

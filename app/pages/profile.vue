@@ -13,13 +13,13 @@
                 </Table>
                 <br>
                 <Table :columns="['Item', 'Order Id', 'Status', 'Amount', '']" tableName="Order History" :items="orders"
-                    type="orders" @accept="handlePay" @decline="handleDelete">
+                    type="orders" @accept="handlePay" @decline="handleCancelOrder">
                 </Table>
             </div>
             <div class="col-md-3">
                 <section id="shipping">
                     <Address :addresses="addresses" @edit="handleEditAddress" @delete="handleDeleteAddress"
-                        @new="handleOpenAddressModal">
+                        @primary="handleSetPrimaryAddress" @new="handleOpenAddressModal">
                     </Address>
                 </section>
                 <section id="payment-info">
@@ -55,7 +55,7 @@ onMounted(async () => {
     console.log("Fetched user orders:", orderStore.getUserOrders)
     await addressStore.fetchUserAddresses(userStore.userId ?? '')
     console.log("Fetched user addresses:", addressStore.getUserAddresses)
-    await paymentStore.fetchUserPayments(userStore.userId ?? '')
+    await paymentStore.fetchUserPayments()
     console.log("Fetched user payment methods:", paymentStore.getUserPayments)
 })
 const userStore = useUserStore();
@@ -93,9 +93,9 @@ const handlePay = (data: any) => {
     navigateTo(`/checkout/${data.id}`)
 }
 
-const handleDelete = (data: any) => {
-    console.log("Deleting order:", data)
-    //orderStore.deleteOrder(data.id);
+const handleCancelOrder = async (data: any) => {
+    await orderStore.cancelOrder(data.id)
+    if (orderStore.error) alert(orderStore.error)
 }
 
 const handleEditAddress = (data: string) => {
@@ -106,6 +106,10 @@ const handleEditAddress = (data: string) => {
 const handleDeleteAddress = (data: string) => {
     if (!user.value) return
     addressStore.deleteAddress(user.value.id, data)
+}
+const handleSetPrimaryAddress = (data: string) => {
+    if (!user.value) return
+    addressStore.setPrimaryAddress(user.value.id, data)
 }
 const handleOpenAddressModal = () => {
     console.log("Adding new address")

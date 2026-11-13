@@ -12,6 +12,7 @@
         <p class="address mt-2"> {{ address.address }}, {{ address.city }}, {{ address.zip }}, {{ address.country }}</p>
         <div class="control-button ">
             <button class="btn btn-address" @click="handleEdit(address.id)">EDIT</button>
+            <button v-if="!address.is_primary" class="btn btn-address ps-2" @click="handlePrimary(address.id)">SET DEFAULT</button>
             <button class="btn btn-address ps-2" @click="handleDelete(address.id)">DELETE</button>
         </div>
     </div>
@@ -26,6 +27,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     edit: [data: string]
     delete: [addressId: string]
+    primary: [addressId: string]
     new: [openModal: boolean]
 }>()
 
@@ -34,6 +36,9 @@ function handleEdit(addressId: string) {
 }
 function handleDelete(addressId: string) {
     emit('delete', addressId)
+}
+function handlePrimary(addressId: string) {
+    emit('primary', addressId)
 }
 function handleNewAddress(openModal: boolean) {
     emit('new', openModal)

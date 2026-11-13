@@ -27,11 +27,29 @@ export const useOrderStore = defineStore("order", () => {
     }
   }
 
+  async function cancelOrder(orderId: string) {
+    error.value = null
+    try {
+      await $fetch(
+        `${useRuntimeConfig().public.API_BASE_URL}/orders/${orderId}/cancel`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      )
+      await fetchUserOrders()
+    } catch (err) {
+      console.error("Failed to cancel order:", err)
+      error.value = "This order can no longer be cancelled."
+    }
+  }
+
   return {
     orders,
     loading,
     error,
     getUserOrders,
     fetchUserOrders,
+    cancelOrder,
   }
 })
