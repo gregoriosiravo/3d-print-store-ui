@@ -26,10 +26,9 @@ app/
     ui/                   # Navbar, Footer, Container, Input (base widgets)
     profile/              # Address, AddressModal, PaymentMethod, PaymentModal, ProfileHeader, Table
   composables/            # useQuoteCalculator, useAuth, useFileUpload, useFormValidation, useDeliveryEstimate
-                          # (useApi is defined but not used)
   stores/                 # Pinia: users, quotes, orders, addresses, payments
-  middleware/             # auth (route guard); verify-email is defined but not used
-  plugins/auth.ts         # restores the session in the browser on app start
+  middleware/             # auth (route guard)
+  plugins/auth.ts         # asks the API who the session belongs to, in the browser only
   types/                  # Quote, PrintConfig, User, Address, Payment, Material
 nuxt.config.ts            # runtime config, route rules, head/SEO
 ```
@@ -132,14 +131,14 @@ classDiagram
     useAuth --> useUserStore : wraps
 ```
 
-The stores call the API with `$fetch` and `API_BASE_URL`, and attach `Authorization: Bearer` from the `auth_token` cookie. `approveQuote` returns the created order (or `null` on failure); the other actions return nothing and set the store's `error` field on failure.
+The stores call the API with `$fetch` and `API_BASE_URL` and send `credentials: "include"`, so the browser attaches the HttpOnly session cookie. The UI never reads or stores the token. `approveQuote` returns the created order (or `null` on failure); the other actions return nothing and set the store's `error` field on failure.
 
 ### Authentication
 
-- `login` and `registerUser` store the JWT in the `auth_token` cookie: 3 days, `Secure`, `SameSite=Strict`.
-- `plugins/auth.ts` runs in the browser on app start. If the cookie exists it sets `isAuthenticated` and calls `fetchUser()`. It does not run during server rendering.
+- The API sets the session cookie (`auth_token`) on login and register. It is `HttpOnly`, so page scripts cannot read it.
+- `login` and `registerUser` call the API and then `fetchUser()`. `logout()` calls `POST /api/auth/logout`, which clears the cookie, then clears the store.
+- `plugins/auth.ts` runs in the browser on app start and calls `fetchUser()`. `fetchUser()` asks `GET /api/auth/profile`: a 401 means logged out. The plugin does not run during server rendering.
 - `middleware/auth.ts` redirects anonymous visitors to `/login?redirect=<page>`.
-- `logout()` clears the cookie and the store.
 
 ### Settings to API mapping
 
@@ -200,7 +199,7 @@ sequenceDiagram
         LG->>U: back to / (click Order now again)
     else logged in
         C->>Q: approveQuote(quoteId)
-        Q->>API: POST /api/quote/:id/approve (Bearer)
+        Q->>API: POST /api/quote/:id/approve (session cookie)
         API-->>Q: 201 { orderId }
         C->>CK: navigate to /checkout/:orderId
         CK->>API: PATCH /api/orders/:id/address (after the address form)
@@ -215,8 +214,8 @@ A guest is sent back to the home page after login, so they click **Order now** a
 ### Profile page
 
 - **Quotes History (7 days max):** Accept calls `quoteStore.approveQuote(id)`, which creates the order and refreshes both lists. Decline calls `rejectQuote` (pending quotes only).
-- **Order History:** Pay navigates to `/checkout/:id`. The order delete button is a stub (see open issues).
-- **Addresses:** list with edit (opens `AddressModal`), add (`addressStore.addAddress`) and delete (`addressStore.deleteAddress`).
+- **Order History:** Pay navigates to `/checkout/:id`. Cancel calls `orderStore.cancelOrder`, which cancels an unpaid order. If the API refuses (for example a paid order), the page shows the message in an alert.
+- **Addresses:** list with edit (opens `AddressModal`), add (`addressStore.addAddress`), delete (`addressStore.deleteAddress`) and **SET DEFAULT** on any address that is not the default (`addressStore.setPrimaryAddress`).
 - **Payments:** the saved cards from `GET /api/payment-methods`, each with brand, last four digits, expiry and whether it is the default. **Make default** and **Remove** call the API. **add** opens `PaymentModal`, which collects the card with Stripe (`confirmSetup`) and then saves it through the API.
 
 ## Components
@@ -234,31 +233,24 @@ A guest is sent back to the home page after login, so they click **Order now** a
 | `profile/PaymentModal.vue` | Stripe card collection (`confirmSetup`) and save |
 | `Modal.vue`, `ui/Input.vue`, `ui/Container.vue` | Shared widgets |
 
-## Changes in this revision
+## Recent changes
 
-| Area | Before | Now | Where |
-|---|---|---|---|
-| Order now | Showed an alert; ordering only worked from the profile page | Logged out: login and attach the quote. Logged in: create the order and open checkout | `composables/useQuoteCalculator.ts` `orderNow` |
-| Approve | Sent a client-side price; returned nothing | Sends no price; returns the order | `stores/quotes.ts` `approveQuote` |
-| Saved cards | Profile showed a hard-coded demo card (4242, "ALEX STERLING") | Real cards from the API, with Make default and Remove | `components/profile/PaymentMethod.vue`, `pages/profile.vue`, `stores/payments.ts` |
-| Address delete | Handler was a stub | Deletes through the API and refreshes the list | `stores/addresses.ts` `deleteAddress`, `pages/profile.vue` |
-| Upload | Accepted STL, OBJ and STEP up to 100 MB; the API only takes STL | STL only, 50 MB, error message shown in the page | `components/Upload.vue`, `composables/useFileUpload.ts` |
-| PETG material | Labelled "PETG-CF" but row 5 is "PETG Clear" | Labelled "PETG Clear" (ID 5) | `components/Settings.vue` |
-| Footer links | `/privacy`, `/terms`, `/enterprise`, `/api-documentation` returned 404 | Placeholder pages exist (text still to be written) | `pages/privacy.vue`, `terms.vue`, `enterprise.vue`, `api-documentation.vue` |
-| Server-side session fetch | `auth` plugin called the API during SSR; inside Docker `localhost:4000` is the container, so it failed | Plugin runs only in the browser | `plugins/auth.ts` |
-| Checkout return URL | `/orders/:id/success`, a route that does not exist | `/profile` | `pages/checkout/[orderId].vue` |
+| Area | Change | Where |
+|---|---|---|
+| Session | The UI no longer reads or sends the token. Requests send the HttpOnly cookie (`credentials: "include"`). Login, register and logout go through the API; the plugin checks the session with `GET /api/auth/profile` | `stores/users.ts`, `stores/*.ts`, `plugins/auth.ts`, `pages/checkout/[orderId].vue` |
+| Logout | Logout called a relative URL, which reached the UI server instead of the API. It now calls the API | `stores/users.ts` |
+| Orders | Cancel on the profile page cancels an unpaid order and shows the API's message when it is refused | `stores/orders.ts` `cancelOrder`, `pages/profile.vue` |
+| Addresses | Any address that is not the default has a SET DEFAULT button | `components/profile/Address.vue`, `stores/addresses.ts` `setPrimaryAddress` |
+| Checkout | Returning from a 3-D Secure redirect shows the success view. The return URL is the checkout page | `pages/checkout/[orderId].vue` |
+| Dev server | The home page cache applies in production only, so the development server no longer serves stale HTML | `nuxt.config.ts` |
+| Cleanup | Unused `composables/useApi.ts` and `middleware/verify-email.ts` removed | |
 
 ## Known issues
 
-These are open. Each one has a file reference.
-
-1. **Order delete does nothing.** The Order History table emits a delete event that `handleDelete` in `pages/profile.vue` ignores, and the API has no endpoint to cancel an order.
-2. **Default address cannot be changed from the UI.** The API has `PATCH /api/address/:userId/addresses/:addressId/primary`, but no button calls it.
-3. **Placeholder content.** `/materials`, `/services`, `/marketplace` and `/prints` have no content, and the four footer pages say the text is being prepared. These are for the content owner to write.
-4. **3-D Secure returns to the profile page without a result.** After a redirect, `pages/checkout/[orderId].vue` does not read the payment status, so the customer sees the profile page and no confirmation. The order status is correct on the server (set by the webhook).
-5. **Dev server can show stale HTML for `/`.** The home page is `swr: 3600` in `nuxt.config.ts`, so Nitro serves a cached copy. After editing the home page, delete `/app/.nuxt/cache/nitro/routes/_/index.*.json` in the UI container or restart the `ui` service.
-6. **The session cookie is readable from JavaScript.** `auth_token` is set without `HttpOnly` (see the API's open issues).
-7. **Unused code.** `composables/useApi.ts` and `middleware/verify-email.ts` are not used by any page or store.
+1. **Placeholder content.** `/materials`, `/services`, `/marketplace` and `/prints` have no content, and the four footer pages say the text is being prepared. The content is for the content owner to write.
+2. **Paid orders cannot be cancelled from the UI.** The API refuses (409) and the page shows the message. Refunds are not built.
+3. **The guest login flow needs a second click.** After logging in from **Order now**, the user returns to the home page and must click **Order now** again. The quote is already attached to their account by then.
+4. **Development ports are published on localhost only.** Docker publishes the UI, API and database on `127.0.0.1`. The dev server still listens on all interfaces inside the container, so reach it through the published port only.
 
 ## Running
 
