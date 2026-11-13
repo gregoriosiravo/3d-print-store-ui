@@ -35,12 +35,14 @@
                                 Materials
                             </NuxtLink>
                         </li>
-                        <li class="nav-item" v-if="isAuthenticated">
-                            <NuxtLink to="/prints" class="nav-link text-secondary-light" activeClass="text-white"
-                                aria-label="View your print orders">
-                                My Prints
-                            </NuxtLink>
-                        </li>
+                        <ClientOnly>
+                                <li class="nav-item" v-if="isAuthenticated">
+                                    <NuxtLink to="/prints" class="nav-link text-secondary-light" activeClass="text-white"
+                                        aria-label="View your print orders">
+                                        My Prints
+                                    </NuxtLink>
+                                </li>
+                        </ClientOnly>
                     </ul>
 
                     <div class="d-flex align-items-center gap-3">
@@ -58,29 +60,31 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </form>
-                        <div class="d-flex" v-if="isAuthenticated">
-                            <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
-                                aria-label="Go to profile page">
-                                Profile
-                            </NuxtLink>
+                        <ClientOnly>
+                            <div class="d-flex" v-if="isAuthenticated">
+                                <NuxtLink to="/profile" class="btn btn-primary btn-sm fw-semibold"
+                                    aria-label="Go to profile page">
+                                    Profile
+                                </NuxtLink>
 
-                            <button type="button" class="btn btn-outline-light btn-sm fw-semibold ms-2"
-                                aria-label="Log out" @click="store.logout()">
-                                Log out
-                            </button>
+                                <button type="button" class="btn btn-outline-light btn-sm fw-semibold ms-2"
+                                    aria-label="Log out" @click="store.logout()">
+                                    Log out
+                                </button>
 
-                            <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
-                                <div class="rounded-circle bg-gradient"
-                                    style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"
-                                    role="img" aria-label="User avatar"></div>
-                            </NuxtLink>
-                        </div>
-                        <div v-else>
-                            <NuxtLink to="/login" class="btn btn-outline-light btn-sm fw-semibold"
-                                aria-label="Log in to your account">
-                                Log In
-                            </NuxtLink>
-                        </div>
+                                <NuxtLink to="/profile" class="d-block" aria-label="View user profile">
+                                    <div class="rounded-circle bg-gradient"
+                                        style="width: 40px; height: 40px; background: linear-gradient(135deg, #fb923c 0%, #ec4899 100%);"
+                                        role="img" aria-label="User avatar"></div>
+                                </NuxtLink>
+                            </div>
+                            <div v-else>
+                                <NuxtLink to="/login" class="btn btn-outline-light btn-sm fw-semibold"
+                                    aria-label="Log in to your account">
+                                    Log In
+                                </NuxtLink>
+                            </div>
+                        </ClientOnly>
                     </div>
                 </div>
             </div>
