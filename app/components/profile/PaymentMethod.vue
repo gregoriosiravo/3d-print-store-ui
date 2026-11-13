@@ -3,45 +3,70 @@
         <h3 class="h5"><i class="bi bi-credit-card "></i> Payments</h3>
         <button class="add-payment-btn btn" @click="handleNewPayment(true)">add</button>
     </div>
-    <div class="credit-card">
-        <!-- Chip -->
-        <div class="chip">
-            <i class="bi bi-credit-card-fill"></i> <!-- or use SVG -->
-        </div>
 
-        <!-- VISA logo -->
-        <div class="visa-logo">
-            VISA
-        </div>
+    <p v-if="!payments.length" class="small text-secondary-light">No saved cards yet.</p>
 
-        <!-- Card number (dotted + last 4) -->
-        <div class="card-number">
-            <span class="dots">•••• •••• •••• </span>
-            <span class="last-four">4242</span>
-        </div>
-
-        <!-- Labels & values -->
-        <div class="card-details">
-            <div class="detail-group">
-                <small class="label">CARD HOLDER</small>
-                <div class="value">ALEX STERLING</div>
+    <div v-for="card in payments" :key="card.id" class="mb-3">
+        <div class="credit-card">
+            <!-- Chip -->
+            <div class="chip">
+                <i class="bi bi-credit-card-fill"></i>
             </div>
-            <div class="detail-group">
-                <small class="label">EXPIRES</small>
-                <div class="value">09/26</div>
+
+            <!-- Brand -->
+            <div class="visa-logo">
+                {{ (card.brand ?? 'card').toUpperCase() }}
             </div>
+
+            <!-- Card number (dotted + last 4) -->
+            <div class="card-number">
+                <span class="dots">•••• •••• •••• </span>
+                <span class="last-four">{{ card.last4 }}</span>
+            </div>
+
+            <!-- Labels & values -->
+            <div class="card-details">
+                <div class="detail-group">
+                    <small class="label">EXPIRES</small>
+                    <div class="value">{{ formatExpiry(card) }}</div>
+                </div>
+                <div class="detail-group">
+                    <small class="label">DEFAULT</small>
+                    <div class="value">{{ card.isDefault ? 'Yes' : 'No' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-2">
+            <button v-if="!card.isDefault" class="card-action-btn btn btn-sm" @click="emit('setDefault', card.id)">
+                Make default
+            </button>
+            <button class="card-action-btn btn btn-sm" @click="emit('delete', card.id)">
+                Remove
+            </button>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import type { PaymentMethodDto } from '~/types/payment'
+
+defineProps<{
+    payments: PaymentMethodDto[]
+}>()
 
 const emit = defineEmits<{
     new: [openModal: boolean]
+    setDefault: [paymentMethodId: string]
+    delete: [paymentMethodId: string]
 }>()
 
 function handleNewPayment(openModal: boolean) {
     emit('new', openModal)
+}
+
+function formatExpiry(card: PaymentMethodDto) {
+    if (!card.expMonth || !card.expYear) return '—'
+    return `${String(card.expMonth).padStart(2, '0')}/${String(card.expYear).slice(-2)}`
 }
 
 </script>
@@ -60,6 +85,17 @@ function handleNewPayment(openModal: boolean) {
 
 .add-payment-btn:hover {
     border: 1px solid #fff;
+    background-color: #137fec;
+    color: white;
+}
+
+.card-action-btn {
+    font-size: small;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-action-btn:hover {
     background-color: #137fec;
     color: white;
 }
@@ -100,7 +136,7 @@ function handleNewPayment(openModal: boolean) {
     font-size: 14px;
 }
 
-/* VISA logo */
+/* Brand */
 .visa-logo {
     position: absolute;
     top: 24px;

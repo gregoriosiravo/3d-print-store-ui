@@ -75,6 +75,28 @@ export const useAddressStore = defineStore("address", () => {
     }
   }
 
+  async function deleteAddress(userId: string, addressId: string) {
+    loading.value = true
+    error.value = null
+    try {
+      await $fetch(
+        `${useRuntimeConfig().public.API_BASE_URL}/address/${userId}/addresses/${addressId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${useCookie("auth_token").value}`,
+          },
+        },
+      )
+      await fetchUserAddresses(userId)
+    } catch (err) {
+      console.error("Failed to delete address:", err)
+      error.value = "Failed to delete address. Please try again."
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     addresses,
     loading,
@@ -83,5 +105,6 @@ export const useAddressStore = defineStore("address", () => {
     fetchUserAddresses,
     addAddress,
     editAddress,
+    deleteAddress,
   }
 })

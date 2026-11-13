@@ -23,7 +23,8 @@
                     </Address>
                 </section>
                 <section id="payment-info">
-                    <PaymentMethod @new="handleOpenPaymentModal">
+                    <PaymentMethod :payments="paymentStore.getUserPayments" @new="handleOpenPaymentModal"
+                        @set-default="handleSetDefaultPayment" @delete="handleDeletePayment">
                     </PaymentMethod>
                 </section>
             </div>
@@ -79,7 +80,7 @@ const addressPrecompiled = computed(() => {
 // Handlers for quote and order actions
 const handleAccept = (data: any) => {
     console.log("Accepting quote:", data)
-    quoteStore.approveQuote(data.id, data.total_price);
+    quoteStore.approveQuote(data.id);
 }
 
 const handleDecline = (data: any) => {
@@ -103,7 +104,8 @@ const handleEditAddress = (data: string) => {
     openAddressModal.value = !openAddressModal.value;
 }
 const handleDeleteAddress = (data: string) => {
-    console.log("Deleting address")
+    if (!user.value) return
+    addressStore.deleteAddress(user.value.id, data)
 }
 const handleOpenAddressModal = () => {
     console.log("Adding new address")
@@ -129,6 +131,14 @@ const handleSaveAddress = async (addressForm: AddressForm | null) => {
 
 const handleSavePayment = () => {
     openPaymentModal.value = false
+}
+
+const handleSetDefaultPayment = (paymentMethodId: string) => {
+    paymentStore.setDefaultPaymentMethod(paymentMethodId)
+}
+
+const handleDeletePayment = (paymentMethodId: string) => {
+    paymentStore.deletePaymentMethod(paymentMethodId)
 }
 </script>
 
